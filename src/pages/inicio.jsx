@@ -5,7 +5,7 @@ import Carousel from 'react-bootstrap/Carousel';
 export default function Inicio() {
   return (
     <div className="container">
-      {/* Menú lateral (Sidebar) */}
+   
       <aside className="sidebar">
         <h3>Categorías</h3>
         <ul>
@@ -18,9 +18,9 @@ export default function Inicio() {
         </ul>
       </aside>
 
-      {/* Contenido principal */}
+     
       <main className="main-content">
-        {/* Banner de bienvenida */}
+      
         <section className="hero-banner">
           <h2>¡Comida deliciosa directo a tu puerta!</h2>
           <p>Descubre nuestros platillos preparados con ingredientes frescos y locales.</p>
@@ -29,7 +29,6 @@ export default function Inicio() {
           </Link>
         </section>
 
-        {/* Banner con carrusel de productos destacados */}
         <section className="hero-banner">
           <h2>Productos Destacados</h2>
           <p>Los platillos más pedidos este mes</p>
@@ -38,21 +37,21 @@ export default function Inicio() {
             <Carousel.Item>
               <img
                 className="d-block w-100"
-                src="/img/sushi-index.jpg" // O usa la variable importada: {sushiImg}
+                src="/img/sushi-index.jpg" 
                 alt="Sushi destacado"
               />
             </Carousel.Item>
             <Carousel.Item>
               <img
                 className="d-block w-100"
-                src="/img/ceasar-index.jpg" // O usa la variable importada: {ceasarImg}
+                src="/img/ceasar-index.jpg" 
                 alt="Ensalada César destacada"
               />
             </Carousel.Item>
             <Carousel.Item>
               <img
                 className="d-block w-100"
-                src="/img/hamburguesa-index.webp" // O usa la variable importada: {burgerImg}
+                src="/img/hamburguesa-index.webp" 
                 alt="Hamburguesa destacada"
               />
             </Carousel.Item>

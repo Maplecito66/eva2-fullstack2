@@ -20,7 +20,7 @@ const regionesYComunas = {
   "Magallanes": ["Punta Arenas", "Laguna Blanca", "Río Verde", "San Gregorio", "Cabo de Hornos", "Antártica", "Porvenir", "Primavera", "Timaukel", "Natales", "Torres del Paine"]
 };
 
-// Estado inicial en blanco para reiniciar los campos
+
 const estadoInicial = {
   nombre: '',
   email: '',
@@ -137,7 +137,7 @@ export default function Registro() {
 
     if (Object.keys(nuevosErrores).length > 0) return;
 
-    // Guardar usuario en localStorage
+
     const nuevoUsuario = {
       nombre: formData.nombre.trim(),
       email: formData.email.trim().toLowerCase(),
@@ -148,14 +148,12 @@ export default function Registro() {
 
     localStorage.setItem('usuarioRegistrado', JSON.stringify(nuevoUsuario));
 
-    // 1. Mostrar la alerta de registro exitoso
+
     alert('¡Registro exitoso! Bienvenido a Sabor & Aroma.');
 
-    // 2. Limpiar todos los campos del formulario y errores
     setFormData(estadoInicial);
     setErrors({});
 
-    // 3. Redirigir a la vista de login
     navigate('/login');
   };
 
@@ -192,7 +190,7 @@ export default function Registro() {
                 type="email"
                 id="email"
                 name="email"
-                maxLength={100}
+                maxLength={110}
                 style={inputStyle}
                 className={errors.email ? 'error' : ''}
                 value={formData.email}
@@ -212,7 +210,7 @@ export default function Registro() {
                 type="email"
                 id="confirmarEmail"
                 name="confirmarEmail"
-                maxLength={100}
+                maxLength={110}
                 style={inputStyle}
                 className={errors.confirmarEmail ? 'error' : ''}
                 value={formData.confirmarEmail}

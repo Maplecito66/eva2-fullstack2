@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 export default function Navbar() {
-  const cantidadCarrito = 0; // Se conectará al estado global/context más adelante
+  const cantidadCarrito = 0; 
 
   return (
     <header className="header-container">
