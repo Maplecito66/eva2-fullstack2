@@ -1,184 +1,994 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+:root {
+    --primary-color: #e65100;    
+    --primary-hover: #bf360c;    
+    --header-bg: #fff3e0;        
+    --text-color: #2e2620;        
+    --link-color: #d84315;       
+    --accent-green: #2e7d32;     
+    --bg-color: #faf8f5;          
+    --card-bg: #ffffff;
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
     display: flex;
-    padding: 6px 12px;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-header {
+    background: var(--header-bg);
+    color: var(--text-color);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #ffe0b2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.logo {
+    display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.logo-icon {
+    font-size: 1.8rem;
+}
+
+.logo h1 {
+    font-size: 1.4rem;
+    color: var(--primary-color);
+    font-weight: 800;
+}
+
+.navbar ul {
+    display: flex;
+    list-style: none; 
+    gap: 10px;
+    align-items: center;
+}
+
+.navbar a {
+    color: var(--link-color);
     text-decoration: none;
-    transition: box-shadow 0.3s;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
 
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
+.navbar a:hover, .navbar a.active {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
 
-  @media (max-width: 1024px) {
-    margin-top: 20px;
+.separator {
+    color: #bdbdbd;
+    font-size: 0.85rem;
+}
+
+.cart-btn {
+    background-color: var(--accent-green);
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+}
+
+.cart-btn:hover {
+    background-color: #1b5e20;
+}
+
+.user-subbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.6rem 2rem;
+    background-color: #fff;
+    border-bottom: 1px solid #f0e6df;
+}
+
+.user-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.user-links a {
+    color: var(--link-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.user-links a:hover {
+    text-decoration: underline;
+}
+
+/* --- CONTENEDOR FLEXBOX EN 2 COLUMNAS --- */
+.container {
+    display: flex;
+    max-width: 1200px;
+    width: 92%;
+    margin: 2rem auto;
+    gap: 2rem;
+    align-items: flex-start; /* Hace que ambas columnas inicien juntas en la parte superior */
+}
+
+/* Sidebar a la izquierda con tamaño fijo */
+.sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--card-bg);
+    padding: 1.2rem;
+    border-radius: 12px;
+    border: 1px solid #f0e6df;
+    height: fit-content;
+}
+
+/* Área de contenido a la derecha */
+.main-content {
+    flex: 1;
+    min-width: 0; /* Previene desbordamientos en resoluciones intermedias */
+}
+
+.main-content h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.2rem;
+}
+
+/* Grilla de productos (Tarjetas organizadas a la derecha) */
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.sidebar h3 {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin-bottom: 0.8rem;
+    border-bottom: 2px solid var(--header-bg);
+    padding-bottom: 0.4rem;
+}
+
+.sidebar ul {
+    list-style: none; 
+}
+
+.sidebar li {
+    margin-bottom: 0.6rem;
+}
+
+.sidebar a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: block;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.sidebar a:hover {
+    background: var(--header-bg);
+    color: var(--primary-color);
+}
+
+.main-content {
+    flex: 1;
+}
+
+.hero-banner {
+    background: linear-gradient(135deg, #ffe0b2 0%, #fff3e0 100%);
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    border: 1px solid #ffcc80;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.hero-banner h2 {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.hero-banner p {
+    color: #5d4037;
+    margin-bottom: 1.5rem;
+}
+
+.hero-banner img {
+    width: 100%;             /* Ocupa todo el ancho de la tarjeta */
+    height: 200px;           /* Define una altura fija (ajusta los píxeles a tu gusto) */
+    object-fit: cover;       /* Recorta la imagen para llenar el área sin deformar la proporción */
+    object-position: center; /* Centra el recorte del contenido de la foto */
+    border-radius: 8px;      /* Opcional: bordes ligeramente redondeados */
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.main-footer {
+    text-align: center;
+    padding: 1.2rem;
+    background: #3e2723; 
+    color: #ffe0b2;
+    margin-top: auto;
+    font-size: 0.9rem;
+}
+
+/* 1. Ajustes base para evitar desbordamiento */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 2. Header adaptable */
+.main-header {
     flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.navbar ul {
+    flex-wrap: wrap;
+}
+
+/* 3. Contenedor principal adaptable */
+.container {
+    flex-direction: row; /* Por defecto en pantallas grandes */
+}
+
+/* 4. Adaptabilidad del Carousel dentro de la hero-banner */
+.carousel-inner img {
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* 5. Media Queries para móviles y tablets */
+@media (max-width: 768px) {
+    .main-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .container {
+        flex-direction: column; /* Apila el menú lateral y el contenido principal */
+        width: 95%;
+        padding: 0;
+    }
+
+    .sidebar {
+        width: 100%; /* La barra lateral ocupa todo el ancho en móviles */
+    }
+
+    .navbar ul {
+        justify-content: center;
+    }
+
+    /* Ocultar separadores de texto en móviles para mejorar el espacio */
+    .separator {
+        display: none;
+    }
+}
+
+/* --- ESTILOS NATIVOS PARA LA PÁGINA NOSOTROS --- */
+
+/* Misión y Visión a dos columnas */
+.grid-dos-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tarjeta-nosotros {
+    background: linear-gradient(135deg, #ffe0b2 0%, #fff3e0 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid #ffcc80;
+    text-align: center;
+}
+
+.tarjeta-nosotros h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+}
+
+.tarjeta-nosotros p {
+    color: #5d4037;
+    line-height: 1.5;
+}
+
+/* Sección de Valores a tres columnas */
+.seccion-valores {
+    background: linear-gradient(135deg, #ffe0b2 0%, #fff3e0 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid #ffcc80;
+    text-align: center;
+}
+
+.seccion-valores h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.6rem;
+}
+
+.grid-tres-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+}
+
+.tarjeta-valor {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border: 1px solid #f0e6df;
+}
+
+.tarjeta-valor h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.tarjeta-valor p {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Adaptación responsive */
+@media (max-width: 768px) {
+    .grid-dos-columnas,
+    .grid-tres-columnas {
+        grid-template-columns: 1fr;
+    }
+}
+
+.blog-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.blog-info {
+    flex: 1;
+}
+
+.blog-info p {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.blog-img {
+    flex: 1;
+    max-width: 50%;
+}
+
+.blog-img img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .blog-card {
+        flex-direction: column-reverse;
+    }
+    .blog-img {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+/* --- ESTILOS PARA PÁGINAS DE DETALLE (DATOCURIOSO) --- */
+
+.detalle-articulo {
+    text-align: center;
+    padding: 2.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.subtitulo-fecha {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+.blog-img-detalle {
+    display: flex;
     justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
+    align-items: center;
+    width: 100%;
+    margin: 0 auto 2rem auto;
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+.blog-img-detalle img {
+    max-height: 380px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.ticks {
-  position: relative;
-  width: 100%;
+.lista-sabores {
+    list-style: none; /* Elimina los puntos desalineados a la izquierda */
+    padding: 0;
+    margin: 1rem 0 2rem 0;
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
+.lista-sabores li {
+    margin-bottom: 0.6rem;
+    line-height: 1.5;
+}
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+.back-container {
+    margin-bottom: 1.5rem;
+}
+
+/* Fuerza texto negro y fondo blanco para todos los campos de formulario */
+.form-group input,
+.form-group select {
+  color: #1a1a1a !important;
+  background-color: #ffffff;
+}
+
+/* Fuerza a que el texto de las opciones desplegables sea oscuro */
+.form-group select option {
+  color: #1a1a1a;
+  background-color: #ffffff;
+}
+
+/* ESTILOS DEL PANEL DE ADMINISTRADOR*/
+
+/* 1. Layout Base (Flexbox) */
+.admin-layout {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    background-color: #f4f7f6;
+}
+
+/* 2. Barra Lateral (Sidebar) */
+.admin-sidebar {
+    width: 260px;
+    background-color: var(--card-bg);
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.sidebar-header {
+    padding: 1.5rem 0;
+    text-align: center;
+    border-bottom: 2px solid var(--header-bg);
+    margin-bottom: 1rem;
+}
+
+.sidebar-header h2 {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+}
+
+/* 3. Navegación del Menú */
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0 1rem;
+}
+
+.sidebar-nav a {
+    display: block;
+    padding: 0.8rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    transition: background 0.3s;
+}
+
+.sidebar-nav a:hover, 
+.sidebar-nav a.active {
+    background-color: var(--header-bg);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.nav-category {
+    font-size: 0.80rem;
+    color: #9e9e9e;
+    margin: 1.5rem 0 0.5rem 0.5rem;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* 4. Contenedor Principal y Cabecera */
+.admin-main {
+    flex: 1; /* Toma todo el espacio sobrante a la derecha */
+    display: flex;
+    flex-direction: column;
+}
+
+.top-header {
+    background-color: var(--card-bg);
+    padding: 1.5rem 2.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 5. Área del Dashboard y Tarjetas */
+.dashboard-content {
+    padding: 2.5rem;
+}
+
+.welcome-card {
+    background-color: var(--card-bg);
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.stats-grid {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap; /* Permite que bajen si la pantalla se achica */
+    margin-top: 2rem;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 200px;
+    padding: 1.5rem;
+    border-radius: 8px;
+    background-color: var(--header-bg);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-top: 0.5rem;
+}
+
+/* Colores específicos de las tarjetas */
+.primary-stat {
+    border-left: 5px solid var(--primary-color);
+}
+.primary-stat .stat-number { color: var(--primary-color); }
+
+.success-stat {
+    background-color: #e8f5e9;
+    border-left: 5px solid var(--accent-green);
+}
+.success-stat .stat-number { color: var(--accent-green); }
+
+/* --- ESTILOS DE LA PÁGINA CARRITO DE COMPRAS --- */
+
+.cart-layout {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.cart-items {
+    flex: 2;
+    min-width: 300px;
+}
+
+.cart-summary {
+    flex: 1;
+    min-width: 260px;
+    border-left: 2px solid #ccc;
+    padding-left: 1.5rem;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item img {
+    width: 110px;
+    height: 85px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ffcc80;
+}
+
+.cart-item-info {
+    flex: 1;
+}
+
+.cart-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    justify-content: flex-end;
+}
+
+.btn-qty {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--text-color);
+    background: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.qty-input {
+    width: 38px;
+    text-align: center;
+    border: 1px solid #ffcc80;
+    border-radius: 4px;
+    padding: 2px;
+    font-weight: bold;
+}
+
+.total-price {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-color);
+}
+
+.btn-pay {
+    width: 100%;
+    background-color: var(--accent-green);
+    color: white;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    transition: background 0.3s;
+}
+
+.btn-pay:hover {
+    background-color: #1b5e20;
+}
+
+.btn-aplicar {
+    background-color: #e0e0e0;
+    border: 1px solid #ccc;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-aplicar:hover {
+    background-color: #d6d6d6;
+}
+
+/* --- ESTILOS DE LA PÁGINA DETALLE DE PRODUCTO --- */
+
+.detalle-container {
+    display: flex;
+    gap: 2.5rem;
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid #f0e6df;
+    align-items: center;
+}
+
+.detalle-imagen {
+    flex: 1;
+    max-width: 450px;
+}
+
+.detalle-imagen img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ffcc80;
+}
+
+.detalle-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.detalle-info h2 {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.detalle-info .precio {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-color);
+}
+
+.detalle-info p {
+    line-height: 1.6;
+    color: #5d4037;
+}
+
+@media (max-width: 768px) {
+    .detalle-container {
+        flex-direction: column;
+    }
+    .detalle-imagen {
+        max-width: 100%;
+    }
+}
+
+/* ESTILOS DE LAS TABLAS (PRODUCTOS Y USUARIOS) */
+
+/* Espaciado para que la tabla no toque los bordes de la pantalla */
+.admin-main {
+    padding: 2rem;
+}
+
+.admin-header {
+    background: var(--card-bg);
+    padding: 1.5rem 2.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px 12px 0 0;
+}
+
+.admin-header h1 {
+    color: var(--text-color);
+    font-size: 1.8rem;
+}
+
+.table-container {
+    background: var(--card-bg);
+    border: 1px solid #e0e0e0;
+    border-radius: 0 0 12px 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    margin-top: 1rem;
+}
+
+.admin-table th {
+    padding: 1rem;
+    border-bottom: 2px solid #ffcc80;
+    background-color: var(--header-bg);
+    color: var(--text-color);
+    font-weight: bold;
+}
+
+.admin-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    color: #444;
+}
+
+.admin-table tr:hover {
+    background-color: #faf8f5;
+}
+
+/* Botones de Editar y Eliminar */
+.action-link {
+    text-decoration: none;
+    font-weight: bold;
+    margin-right: 15px;
+    transition: color 0.2s;
+}
+
+.action-edit { color: #1976d2; }
+.action-edit:hover { color: #0d47a1; text-decoration: underline; }
+
+.action-delete { color: #d32f2f; }
+.action-delete:hover { color: #b71c1c; text-decoration: underline; }
+
+.form-card {
+    background: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+/* Clases nuevas para poner dos campos en la misma fila */
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* Agrupamos input y select para que compartan el mismo diseño */
+.form-group input,
+.form-group select {
+    padding: 0.7rem;
+    border: 1px solid #ffcc80;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.95rem;
+    width: 100%;
+    background-color: #fff;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(230, 81, 0, 0.1); /* Pequeño resplandor al hacer clic */
+}
+
+/* Para los mensajes de error de JavaScript (que usaremos luego) */
+.error-message {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+    display: none; /* Se ocultan por defecto hasta que JS los active */
+    font-weight: 500;
+}
+
+/* Ajuste del botón dentro del formulario */
+.form-btn {
+    width: 100%;
+    margin-top: 1rem;
+    cursor: pointer;
+    border: none;
+    font-size: 1.05rem;
+    padding: 0.8rem;
+}
+
+/* AJUSTES PARA EL PLUGIN DATATABLES */
+.dataTables_wrapper {
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+.dataTables_wrapper select, 
+.dataTables_wrapper input {
+    border: 1px solid #ffcc80;
+    border-radius: 6px;
+    padding: 4px;
+    outline: none;
+}
+
+.dataTables_wrapper select:focus, 
+.dataTables_wrapper input:focus {
+    border-color: var(--primary-color);
+}
+
+/* =========================================
+   DISEÑO RESPONSIVO Y MENÚ HAMBURGUESA
+   ========================================= */
+
+/* Escondemos el botón en computadores */
+.btn-menu-movil {
+    display: none;
+}
+
+@media screen and (max-width: 768px) {
+    .admin-layout {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* 1. Botón hamburguesa visible en celulares */
+    .btn-menu-movil {
+        display: inline-block !important;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        font-size: 1.2rem;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-bottom: 15px;
+        width: fit-content;
+        font-weight: bold;
+    }
+
+    /* 2. Menú lateral escondido a la izquierda (-100%) */
+    .admin-sidebar {
+        position: fixed !important;
+        top: 0;
+        left: -100% !important; 
+        width: 260px !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        transition: left 0.3s ease !important; /* Animación suave */
+        box-shadow: 4px 0 10px rgba(0,0,0,0.2) !important;
+    }
+
+    /* 3. Clase dinámica que el JavaScript le agregará para mostrarlo */
+    .admin-sidebar.mostrar {
+        left: 0 !important;
+    }
+
+    /* 4. Arreglo del espacio del contenido principal */
+    .admin-main {
+        padding: 1.5rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .form-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1.5rem !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .form-row {
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+    .top-header, .admin-header {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 1rem !important;
+    }
 }
