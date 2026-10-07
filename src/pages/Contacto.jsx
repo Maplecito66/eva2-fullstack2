@@ -35,7 +35,7 @@ export default function Contacto() {
     }
   };
 
-  // Validación sin alertas
+  // Validación
   const validate = () => {
     const newErrors = {};
     const nombre = formData.nombre.trim();

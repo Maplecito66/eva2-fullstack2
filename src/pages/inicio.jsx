@@ -6,19 +6,6 @@ export default function Inicio() {
   return (
     <div className="container">
    
-      <aside className="sidebar">
-        <h3>Categorías</h3>
-        <ul>
-          <li><Link to="/menu?cat=todas">🍽️ Todo</Link></li>
-          <li><Link to="/menu?cat=pizzas-hamburguesas">🍕 Pizzas y Hamburguesas</Link></li>
-          <li><Link to="/menu?cat=saludable">🥗 Opción Saludable</Link></li>
-          <li><Link to="/menu?cat=postres">🍰 Postres</Link></li>
-          <li><Link to="/menu?cat=bebidas">🥤 Bebidas</Link></li>
-          <li><Link to="/menu?cat=ofertas">🔥 Ofertas</Link></li>
-        </ul>
-      </aside>
-
-     
       <main className="main-content">
       
         <section className="hero-banner">

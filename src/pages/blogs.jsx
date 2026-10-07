@@ -4,7 +4,6 @@ export default function Blog() {
   // Estado para controlar la vista (null: Lista principal, 1: Noticia Pizza, 2: Noticia Frappés)
   const [articuloActivo, setArticuloActivo] = useState(null);
 
-  // Función para cambiar de vista y subir automáticamente al inicio de la página
   const cambiarArticulo = (id) => {
     setArticuloActivo(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -6,7 +6,7 @@ const db = mysql.createPool({
   user: 'root',      // Configuración por defecto de Laragon
   password: '',      // Contraseña vacía por defecto
   database: 'sabor_aroma',
-  port: 3306,
+  port: 3308,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
