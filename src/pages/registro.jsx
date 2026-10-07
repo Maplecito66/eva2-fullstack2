@@ -20,7 +20,6 @@ const regionesYComunas = {
   "Magallanes": ["Punta Arenas", "Laguna Blanca", "Río Verde", "San Gregorio", "Cabo de Hornos", "Antártica", "Porvenir", "Primavera", "Timaukel", "Natales", "Torres del Paine"]
 };
 
-
 const estadoInicial = {
   nombre: '',
   email: '',
@@ -124,7 +123,7 @@ export default function Registro() {
     validarCampo(name, value, newFormData);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     let nuevosErrores = {};
@@ -137,7 +136,6 @@ export default function Registro() {
 
     if (Object.keys(nuevosErrores).length > 0) return;
 
-
     const nuevoUsuario = {
       nombre: formData.nombre.trim(),
       email: formData.email.trim().toLowerCase(),
@@ -146,15 +144,29 @@ export default function Registro() {
       comuna: formData.comuna
     };
 
-    localStorage.setItem('usuarioRegistrado', JSON.stringify(nuevoUsuario));
+    try {
+      const response = await fetch('http://localhost:5000/api/registro', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(nuevoUsuario)
+      });
 
+      const data = await response.json();
 
-    alert('¡Registro exitoso! Bienvenido a Sabor & Aroma.');
-
-    setFormData(estadoInicial);
-    setErrors({});
-
-    navigate('/login');
+      if (response.ok) {
+        alert('¡Registro exitoso! Guardado en la base de datos.');
+        setFormData(estadoInicial);
+        setErrors({});
+        navigate('/login');
+      } else {
+        alert(data.error || 'Ocurrió un error al registrar.');
+      }
+    } catch (error) {
+      console.error('Error de red:', error);
+      alert('No se pudo conectar con el servidor backend.');
+    }
   };
 
   return (

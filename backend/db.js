@@ -1,19 +1,25 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 
-const db = mysql.createConnection({
+// Creamos un Pool de conexiones con Promesas
+const db = mysql.createPool({
   host: 'localhost',
   user: 'root',      // Configuración por defecto de Laragon
-  password: 'root',      // Contraseña vacía por defecto
+  password: '',      // Contraseña vacía por defecto
   database: 'sabor_aroma',
-  port: 3306
+  port: 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-db.connect((err) => {
-  if (err) {
+// Verificación rápida de conexión al iniciar
+db.getConnection()
+  .then((connection) => {
+    console.log('✅ Conectado exitosamente a MySQL (Laragon con Promesas)');
+    connection.release(); // Liberar la conexión de prueba de vuelta al pool
+  })
+  .catch((err) => {
     console.error('❌ Error de conexión a Laragon MySQL:', err);
-    return;
-  }
-  console.log('✅ Conectado exitosamente a MySQL (Laragon)');
-});
+  });
 
 module.exports = db;

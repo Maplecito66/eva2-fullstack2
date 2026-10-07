@@ -1,8 +1,44 @@
-import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
-  const cantidadCarrito = 0; 
+  const navigate = useNavigate();
+  const [usuario, setUsuario] = useState(null);
+  const cantidadCarrito = 0;
+
+  // Función para obtener los datos del usuario activo en localStorage
+  const cargarUsuario = () => {
+    const usuarioGuardado = localStorage.getItem('usuarioActivo');
+    if (usuarioGuardado) {
+      try {
+        setUsuario(JSON.parse(usuarioGuardado));
+      } catch (error) {
+        console.error('Error al parsear el usuario:', error);
+        setUsuario(null);
+      }
+    } else {
+      setUsuario(null);
+    }
+  };
+
+  useEffect(() => {
+    // Carga inicial al montar el Navbar
+    cargarUsuario();
+
+    // Escucha el evento personalizado enviado desde Login o Registro
+    window.addEventListener('authChange', cargarUsuario);
+
+    return () => {
+      window.removeEventListener('authChange', cargarUsuario);
+    };
+  }, []);
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    localStorage.removeItem('usuarioActivo');
+    window.dispatchEvent(new Event('authChange'));
+    navigate('/login');
+  };
 
   return (
     <header className="header-container">
@@ -53,9 +89,35 @@ export default function Navbar() {
 
       <div className="user-subbar">
         <div className="user-links">
-          <Link to="/login">Iniciar sesión</Link>
-          <span className="separator">|</span>
-          <Link to="/registro">Crear cuenta</Link>
+          {usuario ? (
+            <>
+              <span className="user-welcome">
+                Hola, <strong>{usuario.nombre}</strong>
+              </span>
+
+              {/* Si es administrador, se muestra enlace a su Panel */}
+              {usuario.esAdmin && (
+                <>
+                  <span className="separator">|</span>
+                  <Link to="/admin/dashboard" className="admin-link">
+                    Panel Admin
+                  </Link>
+                </>
+              )}
+
+              <span className="separator">|</span>
+
+              <button onClick={handleLogout} className="btn-logout-link">
+                Cerrar sesión
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">Iniciar sesión</Link>
+              <span className="separator">|</span>
+              <Link to="/registro">Crear cuenta</Link>
+            </>
+          )}
         </div>
       </div>
     </header>

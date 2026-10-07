@@ -474,6 +474,132 @@ img {
   background-color: #ffffff;
 }
 
+/* Mensaje de alerta para errores de login/formulario */
+.alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px solid #f5c6cb;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Estado de error para las cajas de texto */
+.input-error {
+  border-color: #d9534f !important;
+  color: #d9534f !important;
+}
+
+.input-error:focus {
+  outline-color: #d9534f !important;
+  box-shadow: 0 0 5px rgba(217, 83, 79, 0.5) !important;
+}
+
+/* Estilos de la subbarra de usuario autenticado */
+.user-welcome {
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.admin-link {
+  color: #e67e22 !important;
+  font-weight: bold;
+}
+
+.btn-logout-link {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.btn-logout-link:hover {
+  color: #d9534f;
+}
+
+/* vista contacto */
+
+/* Hacer visible los mensajes de error en React */
+.form-group .error-message {
+  display: block !important;
+  color: #d9534f;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+/* Mensaje flotante de éxito al enviar el mensaje */
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px 15px;
+  border-radius: 6px;
+  border: 1px solid #c3e6cb;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Estilo para inputs de Nombre/Email cuando el usuario ya está autenticado */
+.input-disabled {
+  background-color: #f4f3ec !important;
+  cursor: not-allowed;
+  color: #666 !important;
+  border-color: #e0e0e0 !important;
+}
+
+.blog-titulo-seccion {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Botón "Volver a Noticias y Eventos" */
+.btn-volver-blog {
+  background: #ffe0b2;
+  border: 1px solid #ffcc80;
+  color: var(--primary-color);
+  font-weight: bold;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.btn-volver-blog:hover {
+  background: #ffcc80;
+  color: var(--primary-hover);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Botón de acción en las tarjetas del blog */
+.btn-blog-accion {
+  border: none;
+  cursor: pointer;
+}
+
+/* Notas finales y llamadas a la acción dentro del detalle */
+.blog-nota-final {
+  margin-top: 1.5rem;
+  font-style: italic;
+}
+
+.blog-cta-container {
+  margin-top: 2rem;
+}
+
 /* ESTILOS DEL PANEL DE ADMINISTRADOR*/
 
 /* 1. Layout Base (Flexbox) */
