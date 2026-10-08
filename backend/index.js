@@ -183,3 +183,43 @@ app.post('/api/ordenes', async (req, res) => {
 app.listen(5000, () => {
   console.log('🚀 Servidor Backend corriendo en http://localhost:5000');
 });
+
+
+// ENDPOINTS DE ADMINISTRADOR
+
+
+// Obtener la lista de todos los usuarios
+app.get('/api/usuarios', async (req, res) => {
+  try {
+    // Traemos los datos (excluimos la contraseña por seguridad)
+    const [results] = await db.query('SELECT id, nombre, email, region, comuna, esAdmin FROM usuarios');
+    res.json(results);
+  } catch (error) {
+    console.error('Error al consultar usuarios:', error);
+    res.status(500).json({ error: 'Error al consultar usuarios.' });
+  }
+});
+
+// Obtener la lista de todas las ventas/órdenes
+app.get('/api/ordenes', async (req, res) => {
+  try {
+    // Traemos las órdenes ordenadas de la más nueva a la más antigua
+    const [results] = await db.query('SELECT * FROM ordenes ORDER BY fecha DESC');
+    res.json(results);
+  } catch (error) {
+    console.error('Error al consultar órdenes:', error);
+    res.status(500).json({ error: 'Error al consultar órdenes.' });
+  }
+});
+
+// Eliminar un producto por su ID
+app.delete('/api/productos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM productos WHERE id = ?', [id]);
+    res.json({ mensaje: 'Producto eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar producto:', error);
+    res.status(500).json({ error: 'Error al eliminar el producto de la base de datos.' });
+  }
+});

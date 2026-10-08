@@ -46,7 +46,7 @@ export default function Login() {
 
         // 3. Redirección según rol
         if (data.usuario.esAdmin) {
-          navigate('/admin/dashboard'); // Redirige a pages/admin/Dashboard.jsx
+          navigate('/admin'); // Redirige a pages/admin.jsx
         } else {
           navigate('/'); // Redirige a inicio.jsx
         }
