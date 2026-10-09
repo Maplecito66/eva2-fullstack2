@@ -11,16 +11,121 @@ app.get('/', (req, res) => {
   res.send('Servidor Backend Sabor & Aroma funcionando correctamente');
 });
 
-// Endpoint para obtener todos los productos de Laragon
+// -------------------------------------------------------------
+// ENDPOINTS DE CATEGORÍAS
+// -------------------------------------------------------------
+
+// Obtener todas las categorías (para listar en el Navbar)
+app.get('/api/categorias', async (req, res) => {
+  try {
+    const [results] = await db.query('SELECT * FROM categorias ORDER BY id_categoria ASC');
+    res.json(results);
+  } catch (error) {
+    console.error('Error al consultar categorías:', error);
+    res.status(500).json({ error: 'Error al consultar las categorías.' });
+  }
+});
+
+// -------------------------------------------------------------
+// ENDPOINTS DE PRODUCTOS
+// -------------------------------------------------------------
+
+// 1. Obtener todos los productos del catálogo (con categoría y porcentaje de oferta)
 app.get('/api/productos', async (req, res) => {
   try {
-    const [results] = await db.query('SELECT * FROM productos');
+    const query = `
+      SELECT 
+        p.id,
+        p.codigo,
+        p.nombre,
+        p.descripcion,
+        p.precio,
+        p.stock,
+        p.imagen,
+        p.id_categoria,
+        c.nombre_categoria AS categoria,
+        p.id_oferta,
+        o.porcentaje_descuento
+      FROM productos p
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria
+      LEFT JOIN ofertas o ON p.id_oferta = o.id_oferta
+    `;
+    const [results] = await db.query(query);
     res.json(results);
   } catch (error) {
     console.error('Error al consultar productos:', error);
     res.status(500).json({ error: 'Error al consultar productos.' });
   }
 });
+
+// 2. Obtener un único producto por su ID (para la vista de Detalle Producto)
+app.get('/api/productos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const query = `
+      SELECT 
+        p.id,
+        p.codigo,
+        p.nombre,
+        p.descripcion,
+        p.precio,
+        p.stock,
+        p.imagen,
+        p.id_categoria,
+        c.nombre_categoria AS categoria,
+        p.id_oferta,
+        o.porcentaje_descuento
+      FROM productos p
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria
+      LEFT JOIN ofertas o ON p.id_oferta = o.id_oferta
+      WHERE p.id = ?
+    `;
+    const [results] = await db.query(query, [id]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado.' });
+    }
+
+    res.json(results[0]);
+  } catch (error) {
+    console.error('Error al consultar el detalle del producto:', error);
+    res.status(500).json({ error: 'Error al consultar el producto.' });
+  }
+});
+
+// 3. Obtener productos por categoría (por ID o por nombre de categoría)
+app.get('/api/productos/categoria/:categoria', async (req, res) => {
+  const { categoria } = req.params;
+  try {
+    const query = `
+      SELECT 
+        p.id,
+        p.codigo,
+        p.nombre,
+        p.descripcion,
+        p.precio,
+        p.stock,
+        p.imagen,
+        p.id_categoria,
+        c.nombre_categoria AS categoria,
+        p.id_oferta,
+        o.porcentaje_descuento
+      FROM productos p
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria
+      LEFT JOIN ofertas o ON p.id_oferta = o.id_oferta
+      WHERE c.nombre_categoria = ? OR c.id_categoria = ?
+    `;
+    const [results] = await db.query(query, [categoria, categoria]);
+    res.json(results);
+  } catch (error) {
+    console.error('Error al consultar productos por categoría:', error);
+    res.status(500).json({ error: 'Error al filtrar productos.' });
+  }
+});
+
+// -------------------------------------------------------------
+// ENDPOINTS DE AUTENTICACIÓN
+// -------------------------------------------------------------
 
 // Endpoint para registro de usuarios
 app.post('/api/registro', async (req, res) => {
@@ -42,7 +147,6 @@ app.post('/api/registro', async (req, res) => {
 // Endpoint para inicio de sesión (Login)
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-  // Incluimos esAdmin (o es_admin AS esAdmin según la columna de tu BD)
   const sql = 'SELECT id, nombre, email, region, comuna, esAdmin FROM usuarios WHERE email = ? AND password = ?';
 
   try {
@@ -82,7 +186,7 @@ app.get('/api/carrito/:usuario_id', async (req, res) => {
   }
 });
 
-// 2. AGREGAR PRODUCTO AL CARRITO (Si ya existe, incrementa la cantidad)
+// 2. AGREGAR PRODUCTO AL CARRITO
 app.post('/api/carrito', async (req, res) => {
   const { usuario_id, producto_id, cantidad = 1 } = req.body;
 
@@ -135,7 +239,7 @@ app.delete('/api/carrito/:carrito_id', async (req, res) => {
   }
 });
 
-// 5. PROCESAR COMPRA (PAGAR) -> Convierte el carrito en Orden y vacía el carrito
+// 5. PROCESAR COMPRA (PAGAR)
 app.post('/api/ordenes', async (req, res) => {
   const { usuario_id, total } = req.body;
 
@@ -144,7 +248,6 @@ app.post('/api/ordenes', async (req, res) => {
   }
 
   try {
-    // A. Obtener los productos actuales del carrito del usuario
     const [itemsCarrito] = await db.query(
       'SELECT producto_id, cantidad, p.precio FROM carrito c JOIN productos p ON c.producto_id = p.id WHERE c.usuario_id = ?',
       [usuario_id]
@@ -154,14 +257,12 @@ app.post('/api/ordenes', async (req, res) => {
       return res.status(400).json({ error: 'El carrito está vacío.' });
     }
 
-    // B. Crear la orden principal
     const [resultOrden] = await db.query(
       'INSERT INTO ordenes (usuario_id, total) VALUES (?, ?)',
       [usuario_id, total]
     );
     const ordenId = resultOrden.insertId;
 
-    // C. Guardar cada ítem en detalle_ordenes
     for (const item of itemsCarrito) {
       await db.query(
         'INSERT INTO detalle_ordenes (orden_id, producto_id, cantidad, precio_unitario) VALUES (?, ?, ?, ?)',
@@ -169,7 +270,6 @@ app.post('/api/ordenes', async (req, res) => {
       );
     }
 
-    // D. Limpiar el carrito del usuario en MySQL
     await db.query('DELETE FROM carrito WHERE usuario_id = ?', [usuario_id]);
 
     res.status(201).json({ mensaje: 'Compra procesada exitosamente', ordenId });
@@ -179,19 +279,13 @@ app.post('/api/ordenes', async (req, res) => {
   }
 });
 
-// Levantar el servidor al final
-app.listen(5000, () => {
-  console.log('🚀 Servidor Backend corriendo en http://localhost:5000');
-});
-
-
+// -------------------------------------------------------------
 // ENDPOINTS DE ADMINISTRADOR
-
+// -------------------------------------------------------------
 
 // Obtener la lista de todos los usuarios
 app.get('/api/usuarios', async (req, res) => {
   try {
-    // Traemos los datos (excluimos la contraseña por seguridad)
     const [results] = await db.query('SELECT id, nombre, email, region, comuna, esAdmin FROM usuarios');
     res.json(results);
   } catch (error) {
@@ -203,7 +297,6 @@ app.get('/api/usuarios', async (req, res) => {
 // Obtener la lista de todas las ventas/órdenes
 app.get('/api/ordenes', async (req, res) => {
   try {
-    // Traemos las órdenes ordenadas de la más nueva a la más antigua
     const [results] = await db.query('SELECT * FROM ordenes ORDER BY fecha DESC');
     res.json(results);
   } catch (error) {
@@ -222,4 +315,9 @@ app.delete('/api/productos/:id', async (req, res) => {
     console.error('Error al eliminar producto:', error);
     res.status(500).json({ error: 'Error al eliminar el producto de la base de datos.' });
   }
+});
+
+// Levantar el servidor al final
+app.listen(5000, () => {
+  console.log('🚀 Servidor Backend corriendo en http://localhost:5000');
 });
