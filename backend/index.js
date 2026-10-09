@@ -329,7 +329,7 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 });
 
 // === PRODUCTOS ===
-app.get('/api/productos', async (req, res) => {
+app.get('/api/admin/productos', async (req, res) => {
   try {
     const query = `
       SELECT p.*, c.nombre_categoria AS categoria 
@@ -339,7 +339,7 @@ app.get('/api/productos', async (req, res) => {
     const [results] = await db.query(query);
     res.json(results);
   } catch (error) {
-    res.status(500).json({ error: 'Error al consultar productos.' });
+    res.status(500).json({ error: 'Error al consultar productos para admin.' });
   }
 });
 
@@ -374,6 +374,24 @@ app.delete('/api/productos/:id', async (req, res) => {
     res.status(500).json({ error: 'Error al eliminar el producto.' });
   }
 });
+
+//  ÓRDENES (VISTA ADMINISTRADOR)
+app.get('/api/admin/ordenes', async (req, res) => {
+  try {
+    const query = `
+      SELECT o.id, o.usuario_id, o.total, o.fecha, o.estado, u.nombre AS nombre_cliente
+      FROM ordenes o
+      LEFT JOIN usuarios u ON o.usuario_id = u.id
+      ORDER BY o.fecha DESC
+    `;
+    const [results] = await db.query(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error al consultar órdenes:', error);
+    res.status(500).json({ error: 'Error al obtener el historial de órdenes.' });
+  }
+});
+
 // Levantar el servidor al final
 app.listen(5000, () => {
   console.log('🚀 Servidor Backend corriendo en http://localhost:5000');
