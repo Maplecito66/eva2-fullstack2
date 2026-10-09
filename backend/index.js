@@ -280,43 +280,100 @@ app.post('/api/ordenes', async (req, res) => {
 });
 
 // -------------------------------------------------------------
-// ENDPOINTS DE ADMINISTRADOR
+// ENDPOINTS DE ADMINISTRADOR (TU PARTE)
 // -------------------------------------------------------------
 
-// Obtener la lista de todos los usuarios
+// === USUARIOS ===
 app.get('/api/usuarios', async (req, res) => {
   try {
-    const [results] = await db.query('SELECT id, nombre, email, region, comuna, esAdmin FROM usuarios');
+    const [results] = await db.query('SELECT id, nombre, email, region, comuna, esadmin FROM usuarios');
     res.json(results);
   } catch (error) {
-    console.error('Error al consultar usuarios:', error);
     res.status(500).json({ error: 'Error al consultar usuarios.' });
   }
 });
 
-// Obtener la lista de todas las ventas/órdenes
-app.get('/api/ordenes', async (req, res) => {
+app.post('/api/usuarios', async (req, res) => {
+  const { nombre, email, password, region, comuna, esadmin } = req.body;
+  const sql = 'INSERT INTO usuarios (nombre, email, password, region, comuna, esadmin) VALUES (?, ?, ?, ?, ?, ?)';
   try {
-    const [results] = await db.query('SELECT * FROM ordenes ORDER BY fecha DESC');
+    const [result] = await db.query(sql, [nombre, email, password, region, comuna, esadmin]);
+    res.status(201).json({ mensaje: 'Usuario creado con éxito', id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al guardar el usuario.' });
+  }
+});
+
+app.put('/api/usuarios/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, email, password, region, comuna, esadmin } = req.body;
+  try {
+    if (password) {
+      await db.query('UPDATE usuarios SET nombre=?, email=?, password=?, region=?, comuna=?, esadmin=? WHERE id=?', [nombre, email, password, region, comuna, esadmin, id]);
+    } else {
+      await db.query('UPDATE usuarios SET nombre=?, email=?, region=?, comuna=?, esadmin=? WHERE id=?', [nombre, email, region, comuna, esadmin, id]);
+    }
+    res.json({ mensaje: 'Usuario actualizado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el usuario.' });
+  }
+});
+
+app.delete('/api/usuarios/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM usuarios WHERE id = ?', [req.params.id]);
+    res.json({ mensaje: 'Usuario eliminado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar el usuario.' });
+  }
+});
+
+// === PRODUCTOS ===
+app.get('/api/productos', async (req, res) => {
+  try {
+    const query = `
+      SELECT p.*, c.nombre_categoria AS categoria 
+      FROM productos p 
+      INNER JOIN categorias c ON p.id_categoria = c.id_categoria
+    `;
+    const [results] = await db.query(query);
     res.json(results);
   } catch (error) {
-    console.error('Error al consultar órdenes:', error);
-    res.status(500).json({ error: 'Error al consultar órdenes.' });
+    res.status(500).json({ error: 'Error al consultar productos.' });
   }
 });
 
-// Eliminar un producto por su ID
-app.delete('/api/productos/:id', async (req, res) => {
-  const { id } = req.params;
+app.post('/api/productos', async (req, res) => {
+  const { codigo, nombre, id_categoria, precio, stock, descripcion } = req.body;
+  const sql = 'INSERT INTO productos (codigo, nombre, id_categoria, precio, stock, descripcion) VALUES (?, ?, ?, ?, ?, ?)';
   try {
-    await db.query('DELETE FROM productos WHERE id = ?', [id]);
+    const [result] = await db.query(sql, [codigo, nombre, id_categoria, precio, stock, descripcion]);
+    res.status(201).json({ mensaje: 'Producto creado con éxito', id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al guardar el producto.' });
+  }
+});
+
+app.put('/api/productos/:id', async (req, res) => {
+  const { id } = req.params;
+  const { codigo, nombre, id_categoria, precio, stock, descripcion } = req.body;
+  const sql = 'UPDATE productos SET codigo=?, nombre=?, id_categoria=?, precio=?, stock=?, descripcion=? WHERE id=?';
+  try {
+    await db.query(sql, [codigo, nombre, id_categoria, precio, stock, descripcion, id]);
+    res.json({ mensaje: 'Producto actualizado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el producto.' });
+  }
+});
+
+app.delete('/api/productos/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM productos WHERE id = ?', [req.params.id]);
     res.json({ mensaje: 'Producto eliminado correctamente' });
   } catch (error) {
-    console.error('Error al eliminar producto:', error);
-    res.status(500).json({ error: 'Error al eliminar el producto de la base de datos.' });
+    res.status(500).json({ error: 'Error al eliminar el producto.' });
   }
 });
-
 // Levantar el servidor al final
 app.listen(5000, () => {
   console.log('🚀 Servidor Backend corriendo en http://localhost:5000');
