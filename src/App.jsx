@@ -4,20 +4,19 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 // Componentes
-import Layout from './components/Layout';
+import Layout from './components/Client/Layout';
 
-// Páginas Públicas
-import Inicio from './pages/inicio';
-import Productos from './pages/productos';
-import Blogs from './pages/blogs';
-import Carrito from './pages/carrito';
-import Login from './pages/login';
-import Registro from './pages/registro';
-import DetalleProducto from './pages/detalleproducto';
-import Nosotros from './pages/Nosotros';
-import Contacto from './pages/Contacto';
+// Páginas Públicas 
+import Inicio from './pages/client/Inicio';
+import Categorias from './pages/client/catalogo';
+import Blogs from './pages/client/Blogs';
+import Carrito from './pages/client/Carrito';
+import Login from './pages/client/Login';
+import Registro from './pages/client/Registro';
+import Nosotros from './pages/client/Nosotros';
+import Contacto from './pages/client/Contacto';
 
-// Páginas de Administrador
+// Páginas y Layout de Administrador
 import Dashboard from './pages/admin/Dashboard';
 import ProductosAdmin from './pages/admin/ProductosAdmin';
 import UsuariosAdmin from './pages/admin/UsuariosAdmin';
@@ -39,26 +38,30 @@ export default function App() {
   return (
     <Router>
       <Routes>
+        {/* RUTAS PÚBLICAS */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Inicio />} />
-          <Route path="menu" element={<Productos />} />
+          
+          {/* Rutas unificadas a Categorias.jsx */}
+          <Route path="categorias" element={<Categorias />} />
+          <Route path="menu" element={<Categorias />} />
+          
           <Route path="nosotros" element={<Nosotros />} />
           <Route path="blog" element={<Blogs />} />
           <Route path="contacto" element={<Contacto />} />
           <Route path="carrito" element={<Carrito />} />
           <Route path="login" element={<Login />} />
           <Route path="registro" element={<Registro />} />
-          <Route path="producto/:id" element={<DetalleProducto />} />
         </Route>
 
-          {/* TUS RUTAS AHORA ESTÁN PROTEGIDAS POR EL GUARDIÁN */}
-          <Route path="/admin" element={<RutaAdministrador><AdminLayout /></RutaAdministrador>}>
-            <Route index element={<Dashboard />} />
-            <Route path="productos" element={<ProductosAdmin />} />
-            <Route path="usuarios" element={<UsuariosAdmin />} />
-            <Route path="ordenes" element={<Ordenes />} />
-          </Route>
+        {/* RUTAS PROTEGIDAS DEL ADMINISTRADOR */}
+        <Route path="/admin" element={<RutaAdministrador><AdminLayout /></RutaAdministrador>}>
+          <Route index element={<Dashboard />} />
+          <Route path="productos" element={<ProductosAdmin />} />
+          <Route path="usuarios" element={<UsuariosAdmin />} />
+          <Route path="ordenes" element={<Ordenes />} />
+        </Route>
       </Routes>
     </Router>
   );
-}           
+}

@@ -34,6 +34,9 @@ CREATE TABLE IF NOT EXISTS `carrito` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Volcando datos para la tabla sabor_aroma.carrito: ~0 rows (aproximadamente)
+INSERT INTO `carrito` (`id`, `usuario_id`, `producto_id`, `cantidad`, `created_at`) VALUES
+	(1, 3, 1, 1, '2026-10-09 03:01:38'),
+	(2, 3, 2, 1, '2026-10-09 03:01:42');
 
 -- Volcando estructura para tabla sabor_aroma.categorias
 CREATE TABLE IF NOT EXISTS `categorias` (
@@ -45,9 +48,9 @@ CREATE TABLE IF NOT EXISTS `categorias` (
 -- Volcando datos para la tabla sabor_aroma.categorias: ~4 rows (aproximadamente)
 INSERT INTO `categorias` (`id_categoria`, `nombre_categoria`) VALUES
 	(1, 'Comida Rapida'),
-	(2, 'saludable'),
-	(3, 'postres'),
-	(4, 'bebidas');
+	(2, 'Saludable'),
+	(3, 'Postres'),
+	(4, 'Bebidas');
 
 -- Volcando estructura para tabla sabor_aroma.detalle_ordenes
 CREATE TABLE IF NOT EXISTS `detalle_ordenes` (

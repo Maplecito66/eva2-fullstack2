@@ -116,47 +116,30 @@ body {
     text-decoration: underline;
 }
 
-/* --- CONTENEDOR FLEXBOX EN 2 COLUMNAS --- */
+/* --- CONTENEDOR FLEXBOX EN 2 COLUMNAS (AMPLIADO A LOS BORDES) --- */
 .container {
     display: flex;
-    max-width: 1200px;
-    width: 92%;
-    margin: 2rem auto;
-    gap: 2rem;
-    align-items: flex-start; /* Hace que ambas columnas inicien juntas en la parte superior */
+    max-width: 1450px; /* Ampliado para desplazar Categorías más a la izquierda */
+    width: 96%;        /* Reduce bordes vacíos laterales */
+    margin: 1.8rem auto;
+    gap: 1.5rem;       /* Espacio entre sidebar y tarjetas */
+    align-items: flex-start;
 }
 
-/* Sidebar a la izquierda con tamaño fijo */
+/* Sidebar de Categorías (Compacta y pegada a la izquierda) */
 .sidebar {
-    width: 240px;
-    min-width: 240px;
+    width: 220px;
+    min-width: 220px;
     background: var(--card-bg);
-    padding: 1.2rem;
+    padding: 1.2rem 1rem;
     border-radius: 12px;
     border: 1px solid #f0e6df;
     height: fit-content;
-}
-
-/* Área de contenido a la derecha */
-.main-content {
-    flex: 1;
-    min-width: 0; /* Previene desbordamientos en resoluciones intermedias */
-}
-
-.main-content h2 {
-    color: var(--primary-color);
-    margin-bottom: 1.2rem;
-}
-
-/* Grilla de productos (Tarjetas organizadas a la derecha) */
-.productos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .sidebar h3 {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     color: var(--primary-color);
     margin-bottom: 0.8rem;
     border-bottom: 2px solid var(--header-bg);
@@ -168,7 +151,7 @@ body {
 }
 
 .sidebar li {
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
 }
 
 .sidebar a {
@@ -176,20 +159,55 @@ body {
     text-decoration: none;
     font-size: 0.95rem;
     display: block;
-    padding: 0.4rem 0.6rem;
+    padding: 0.5rem 0.6rem;
     border-radius: 6px;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s;
 }
 
-.sidebar a:hover {
+.sidebar a:hover,
+.sidebar a.active {
     background: var(--header-bg);
     color: var(--primary-color);
+    font-weight: 600;
 }
 
+/* Área de contenido principal a la derecha */
 .main-content {
     flex: 1;
+    min-width: 0;
 }
 
+.main-content h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.2rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Grilla de productos (Tarjetas más grandes que aprovechan el espacio) */
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); /* Tarjetas más anchas */
+    gap: 1.8rem;
+}
+
+/* Estilo mejorado para las tarjetas de producto */
+.productos-grid .card,
+.productos-grid .producto-card,
+.productos-grid > div {
+    border-radius: 14px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.productos-grid img {
+    width: 100%;
+    height: 220px; /* Imagen más alta y vistosa */
+    object-fit: cover;
+    object-position: center;
+    border-radius: 10px;
+}
+
+/* Banner Hero */
 .hero-banner {
     background: linear-gradient(135deg, #ffe0b2 0%, #fff3e0 100%);
     padding: 3rem 2rem;
@@ -211,11 +229,11 @@ body {
 }
 
 .hero-banner img {
-    width: 100%;             /* Ocupa todo el ancho de la tarjeta */
-    height: 200px;           /* Define una altura fija (ajusta los píxeles a tu gusto) */
-    object-fit: cover;       /* Recorta la imagen para llenar el área sin deformar la proporción */
-    object-position: center; /* Centra el recorte del contenido de la foto */
-    border-radius: 8px;      /* Opcional: bordes ligeramente redondeados */
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
 }
 
 .btn-primary {
@@ -242,35 +260,18 @@ body {
     font-size: 0.9rem;
 }
 
-/* 1. Ajustes base para evitar desbordamiento */
 img {
     max-width: 100%;
     height: auto;
 }
 
-/* 2. Header adaptable */
-.main-header {
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.navbar ul {
-    flex-wrap: wrap;
-}
-
-/* 3. Contenedor principal adaptable */
-.container {
-    flex-direction: row; /* Por defecto en pantallas grandes */
-}
-
-/* 4. Adaptabilidad del Carousel dentro de la hero-banner */
 .carousel-inner img {
     max-height: 400px;
     object-fit: cover;
     border-radius: 8px;
 }
 
-/* 5. Media Queries para móviles y tablets */
+/* --- ESTILOS RESPONSIVOS PARA TABLETS Y CELULARES --- */
 @media (max-width: 768px) {
     .main-header {
         flex-direction: column;
@@ -278,28 +279,38 @@ img {
     }
 
     .container {
-        flex-direction: column; /* Apila el menú lateral y el contenido principal */
+        flex-direction: column;
         width: 95%;
-        padding: 0;
+        margin: 1rem auto;
+        gap: 1.2rem;
     }
 
     .sidebar {
-        width: 100%; /* La barra lateral ocupa todo el ancho en móviles */
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .productos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.2rem;
     }
 
     .navbar ul {
         justify-content: center;
     }
 
-    /* Ocultar separadores de texto en móviles para mejorar el espacio */
     .separator {
         display: none;
     }
 }
 
-/* --- ESTILOS NATIVOS PARA LA PÁGINA NOSOTROS --- */
+@media (max-width: 480px) {
+    .productos-grid {
+        grid-template-columns: 1fr; /* Una columna full width en celulares pequeños */
+    }
+}
 
-/* Misión y Visión a dos columnas */
+/* --- ESTILOS PÁGINA NOSOTROS --- */
 .grid-dos-columnas {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -326,7 +337,6 @@ img {
     line-height: 1.5;
 }
 
-/* Sección de Valores a tres columnas */
 .seccion-valores {
     background: linear-gradient(135deg, #ffe0b2 0%, #fff3e0 100%);
     padding: 2rem;
@@ -367,7 +377,6 @@ img {
     line-height: 1.4;
 }
 
-/* Adaptación responsive */
 @media (max-width: 768px) {
     .grid-dos-columnas,
     .grid-tres-columnas {
@@ -415,8 +424,6 @@ img {
     }
 }
 
-/* --- ESTILOS PARA PÁGINAS DE DETALLE (DATOCURIOSO) --- */
-
 .detalle-articulo {
     text-align: center;
     padding: 2.5rem;
@@ -447,7 +454,7 @@ img {
 }
 
 .lista-sabores {
-    list-style: none; /* Elimina los puntos desalineados a la izquierda */
+    list-style: none;
     padding: 0;
     margin: 1rem 0 2rem 0;
 }
@@ -461,20 +468,17 @@ img {
     margin-bottom: 1.5rem;
 }
 
-/* Fuerza texto negro y fondo blanco para todos los campos de formulario */
 .form-group input,
 .form-group select {
   color: #1a1a1a !important;
   background-color: #ffffff;
 }
 
-/* Fuerza a que el texto de las opciones desplegables sea oscuro */
 .form-group select option {
   color: #1a1a1a;
   background-color: #ffffff;
 }
 
-/* Mensaje de alerta para errores de login/formulario */
 .alert-error {
   background-color: #f8d7da;
   color: #721c24;
@@ -487,7 +491,6 @@ img {
   font-weight: 500;
 }
 
-/* Estado de error para las cajas de texto */
 .input-error {
   border-color: #d9534f !important;
   color: #d9534f !important;
@@ -498,7 +501,6 @@ img {
   box-shadow: 0 0 5px rgba(217, 83, 79, 0.5) !important;
 }
 
-/* Estilos de la subbarra de usuario autenticado */
 .user-welcome {
   color: #333;
   font-size: 0.9rem;
@@ -524,9 +526,6 @@ img {
   color: #d9534f;
 }
 
-/* vista contacto */
-
-/* Hacer visible los mensajes de error en React */
 .form-group .error-message {
   display: block !important;
   color: #d9534f;
@@ -535,7 +534,6 @@ img {
   font-weight: 500;
 }
 
-/* Mensaje flotante de éxito al enviar el mensaje */
 .alert-success {
   background-color: #d4edda;
   color: #155724;
@@ -548,7 +546,6 @@ img {
   font-weight: 600;
 }
 
-/* Estilo para inputs de Nombre/Email cuando el usuario ya está autenticado */
 .input-disabled {
   background-color: #f4f3ec !important;
   cursor: not-allowed;
@@ -561,7 +558,6 @@ img {
   margin-bottom: 2rem;
 }
 
-/* Botón "Volver a Noticias y Eventos" */
 .btn-volver-blog {
   background: #ffe0b2;
   border: 1px solid #ffcc80;
@@ -584,13 +580,11 @@ img {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Botón de acción en las tarjetas del blog */
 .btn-blog-accion {
   border: none;
   cursor: pointer;
 }
 
-/* Notas finales y llamadas a la acción dentro del detalle */
 .blog-nota-final {
   margin-top: 1.5rem;
   font-style: italic;
@@ -600,9 +594,121 @@ img {
   margin-top: 2rem;
 }
 
-/* ESTILOS DEL PANEL DE ADMINISTRADOR*/
+/* =========================================================
+   ESTILOS PARA MENÚ DESPLEGABLE EN NAVBAR (CORREGIDO A VERTICAL)
+   ========================================================= */
 
-/* 1. Layout Base (Flexbox) */
+.dropdown-categorias-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-link-categorias {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-flecha-dropdown {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 0.7rem;
+  cursor: pointer;
+  padding: 0 0.3rem;
+  margin-left: 0.2rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.btn-flecha-dropdown:hover {
+  color: var(--primary-color, #d32f2f);
+  transform: scale(1.2);
+}
+
+/* Fuerza el despliegue vertical (columna) sobreescribiendo el flex horizontal del navbar */
+.mini-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  list-style: none;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  min-width: 230px;
+  z-index: 1000;
+  display: flex !important;
+  flex-direction: column !important; /* Ordena los botones uno debajo de otro */
+  align-items: stretch !important;
+  gap: 0 !important;
+}
+
+.mini-menu-dropdown li {
+  margin: 0 !important;
+  width: 100%;
+}
+
+.mini-menu-dropdown li button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  font-size: 0.9rem;
+  color: #333333;
+  cursor: pointer;
+  white-space: nowrap; /* Mantiene el texto de la categoría en una sola línea */
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.mini-menu-dropdown li button:hover {
+  background-color: #fff3e0;
+  color: var(--primary-color, #e65100);
+  font-weight: bold;
+}
+
+/* Badge de porcentaje de oferta */
+.badge-oferta {
+  background-color: #d32f2f;
+  color: #ffffff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-left: 0.5rem;
+  display: inline-block;
+}
+
+/* Toast flotante sin alert() */
+.toast-notificacion {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background-color: #2e7d32;
+  color: #ffffff;
+  padding: 0.9rem 1.4rem;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  animation: fadeInOut 0.3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- PANEL DE ADMINISTRADOR --- */
 .admin-layout {
     display: flex;
     flex-direction: row;
@@ -610,7 +716,6 @@ img {
     background-color: #f4f7f6;
 }
 
-/* 2. Barra Lateral (Sidebar) */
 .admin-sidebar {
     width: 260px;
     background-color: var(--card-bg);
@@ -630,7 +735,6 @@ img {
     font-size: 1.4rem;
 }
 
-/* 3. Navegación del Menú */
 .sidebar-nav ul {
     list-style: none;
     padding: 0 1rem;
@@ -661,9 +765,8 @@ img {
     font-weight: bold;
 }
 
-/* 4. Contenedor Principal y Cabecera */
 .admin-main {
-    flex: 1; /* Toma todo el espacio sobrante a la derecha */
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
@@ -677,7 +780,6 @@ img {
     align-items: center;
 }
 
-/* 5. Área del Dashboard y Tarjetas */
 .dashboard-content {
     padding: 2.5rem;
 }
@@ -692,7 +794,7 @@ img {
 .stats-grid {
     display: flex;
     gap: 1.5rem;
-    flex-wrap: wrap; /* Permite que bajen si la pantalla se achica */
+    flex-wrap: wrap;
     margin-top: 2rem;
 }
 
@@ -710,7 +812,6 @@ img {
     margin-top: 0.5rem;
 }
 
-/* Colores específicos de las tarjetas */
 .primary-stat {
     border-left: 5px solid var(--primary-color);
 }
@@ -722,8 +823,7 @@ img {
 }
 .success-stat .stat-number { color: var(--accent-green); }
 
-/* --- ESTILOS DE LA PÁGINA CARRITO DE COMPRAS --- */
-
+/* --- CARRITO DE COMPRAS --- */
 .cart-layout {
     display: flex;
     gap: 2rem;
@@ -830,8 +930,7 @@ img {
     background-color: #d6d6d6;
 }
 
-/* --- ESTILOS DE LA PÁGINA DETALLE DE PRODUCTO --- */
-
+/* --- DETALLE DE PRODUCTO --- */
 .detalle-container {
     display: flex;
     gap: 2.5rem;
@@ -887,9 +986,7 @@ img {
     }
 }
 
-/* ESTILOS DE LAS TABLAS (PRODUCTOS Y USUARIOS) */
-
-/* Espaciado para que la tabla no toque los bordes de la pantalla */
+/* --- TABLAS ADMIN --- */
 .admin-main {
     padding: 2rem;
 }
@@ -943,7 +1040,6 @@ img {
     background-color: #faf8f5;
 }
 
-/* Botones de Editar y Eliminar */
 .action-link {
     text-decoration: none;
     font-weight: bold;
@@ -978,7 +1074,6 @@ img {
     color: var(--text-color);
 }
 
-/* Clases nuevas para poner dos campos en la misma fila */
 .form-row {
     display: flex;
     gap: 15px;
@@ -988,7 +1083,6 @@ img {
     flex: 1;
 }
 
-/* Agrupamos input y select para que compartan el mismo diseño */
 .form-group input,
 .form-group select {
     padding: 0.7rem;
@@ -1004,19 +1098,17 @@ img {
 .form-group input:focus,
 .form-group select:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(230, 81, 0, 0.1); /* Pequeño resplandor al hacer clic */
+    box-shadow: 0 0 0 2px rgba(230, 81, 0, 0.1);
 }
 
-/* Para los mensajes de error de JavaScript (que usaremos luego) */
 .error-message {
     color: #ef4444;
     font-size: 0.8rem;
     margin-top: 0.4rem;
-    display: none; /* Se ocultan por defecto hasta que JS los active */
+    display: none;
     font-weight: 500;
 }
 
-/* Ajuste del botón dentro del formulario */
 .form-btn {
     width: 100%;
     margin-top: 1rem;
@@ -1026,7 +1118,6 @@ img {
     padding: 0.8rem;
 }
 
-/* AJUSTES PARA EL PLUGIN DATATABLES */
 .dataTables_wrapper {
     margin-top: 20px;
     font-size: 0.95rem;
@@ -1045,11 +1136,6 @@ img {
     border-color: var(--primary-color);
 }
 
-/* =========================================
-   DISEÑO RESPONSIVO Y MENÚ HAMBURGUESA
-   ========================================= */
-
-/* Escondemos el botón en computadores */
 .btn-menu-movil {
     display: none;
 }
@@ -1060,7 +1146,6 @@ img {
         flex-direction: column !important;
     }
 
-    /* 1. Botón hamburguesa visible en celulares */
     .btn-menu-movil {
         display: inline-block !important;
         background: var(--primary-color);
@@ -1075,7 +1160,6 @@ img {
         font-weight: bold;
     }
 
-    /* 2. Menú lateral escondido a la izquierda (-100%) */
     .admin-sidebar {
         position: fixed !important;
         top: 0;
@@ -1083,16 +1167,14 @@ img {
         width: 260px !important;
         height: 100vh !important;
         z-index: 9999 !important;
-        transition: left 0.3s ease !important; /* Animación suave */
+        transition: left 0.3s ease !important;
         box-shadow: 4px 0 10px rgba(0,0,0,0.2) !important;
     }
 
-    /* 3. Clase dinámica que el JavaScript le agregará para mostrarlo */
     .admin-sidebar.mostrar {
         left: 0 !important;
     }
 
-    /* 4. Arreglo del espacio del contenido principal */
     .admin-main {
         padding: 1.5rem !important;
         width: 100% !important;
