@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 
 export default function catalogo() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoriaURL = searchParams.get('cat') || 'todas';
+  const idURL = searchParams.get('id');
+
+  const { addToCart } = useCart();
 
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [errorBD, setErrorBD] = useState('');
 
-  // Estado para la vista de detalle del producto
   const [productoDetalle, setProductoDetalle] = useState(null);
   const [mensajeToast, setMensajeToast] = useState('');
 
-  // Cargar datos desde la Base de Datos MySQL
   const cargarDatosBD = async () => {
     try {
       setCargando(true);
@@ -45,7 +47,6 @@ export default function catalogo() {
   useEffect(() => {
     cargarDatosBD();
 
-    // Reconsultar base de datos automáticamente si el administrador realiza cambios
     const manejarCambiosBD = () => cargarDatosBD();
     window.addEventListener('categoryChange', manejarCambiosBD);
 
@@ -54,84 +55,47 @@ export default function catalogo() {
     };
   }, []);
 
-  // Formateador de precios en CLP
+  useEffect(() => {
+    if (productos.length > 0 && idURL) {
+      const encontrado = productos.find(p => String(p.id) === String(idURL));
+      if (encontrado) {
+        setProductoDetalle(encontrado);
+      }
+    } else if (!idURL) {
+      setProductoDetalle(null);
+    }
+  }, [productos, idURL]);
+
   const formatearPrecio = (valor) => {
     const num = Number(valor) || 0;
     return num.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
   };
 
-  // Agregar al carrito (BD si hay usuario logueado, localStorage si es invitado)
-  const agregarAlCarrito = async (producto) => {
-    const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
-
-    if (usuarioActivo && usuarioActivo.id) {
-      try {
-        const response = await fetch('http://localhost:5000/api/carrito', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            usuario_id: usuarioActivo.id,
-            producto_id: producto.id,
-            cantidad: 1
-          })
-        });
-
-        if (!response.ok) throw new Error('Error al guardar en el carrito de BD');
-
-        setMensajeToast(`¡"${producto.nombre}" guardado en tu pedido (BD)!`);
-      } catch (err) {
-        console.error(err);
-        setMensajeToast('Error al guardar en la base de datos.');
-      }
-    } else {
-      let carrito = JSON.parse(localStorage.getItem('carritoCompras')) || [];
-      let enCarrito = carrito.find(item => item.id === producto.id);
-
-      if (enCarrito) {
-        enCarrito.cantidad += 1;
-      } else {
-        carrito.push({
-          id: producto.id,
-          nombre: producto.nombre,
-          descripcion: producto.descripcion,
-          precio: Number(producto.precio),
-          imagen: producto.imagen,
-          cantidad: 1
-        });
-      }
-
-      localStorage.setItem('carritoCompras', JSON.stringify(carrito));
-      setMensajeToast(`¡"${producto.nombre}" agregado al pedido!`);
-    }
-
-    // Disparar evento para refrescar el contador en el Header
-    window.dispatchEvent(new Event('cartChange'));
-    window.dispatchEvent(new Event('authChange'));
-
+  const handleAgregarAlPedido = async (producto) => {
+    await addToCart(producto);
+    setMensajeToast(`¡"${producto.nombre}" agregado al pedido!`);
     setTimeout(() => setMensajeToast(''), 3000);
   };
 
-  // Navegar a la vista de detalle de un producto
   const verDetalle = (prod) => {
     setProductoDetalle(prod);
+    setSearchParams({ id: prod.id });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Volver al listado general de productos
   const volverAlListado = () => {
     setProductoDetalle(null);
+    setSearchParams({});
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Filtrado de productos según la categoría seleccionada
   const productosFiltrados = categoriaURL === 'todas'
     ? productos
     : productos.filter(p => p.categoria === categoriaURL);
 
-  // Generar 3 productos aleatorios para la sección "También te podría gustar"[cite: 6, 7]
   const obtenerRecomendados = (idActual) => {
     const disponibles = productos.filter(p => p.id !== idActual);
-    return [...disponibles].sort(() => 0.5 - Math.random()).slice(0, 3);
+    return [...disponibles].sort(() => 0.5 - Math.random()).slice(0, 4);
   };
 
   if (cargando) {
@@ -156,12 +120,8 @@ export default function catalogo() {
 
   return (
     <div className="container">
-      {/* Toast Informativo sin alert() */}
       {mensajeToast && <div className="toast-notificacion">🛒 {mensajeToast}</div>}
 
-      {/* =========================================================
-          VISTA 1: DETALLE DEL PRODUCTO
-         ========================================================= */}
       {productoDetalle ? (
         <main className="main-content" style={{ width: '100%' }}>
           <div className="back-container" style={{ marginBottom: '1.5rem' }}>
@@ -190,7 +150,7 @@ export default function catalogo() {
               <div>
                 <button 
                   className="btn-primary" 
-                  onClick={() => agregarAlCarrito(productoDetalle)}
+                  onClick={() => handleAgregarAlPedido(productoDetalle)}
                 >
                   Agregar al Pedido
                 </button>
@@ -198,7 +158,6 @@ export default function catalogo() {
             </div>
           </div>
 
-          {/* SECCIÓN DE RECOMENDADOS */}
           <section className="productos-recomendados" style={{ marginTop: '3rem' }}>
             <h3 style={{ color: 'var(--primary-color)', marginBottom: '1.5rem', textAlign: 'center' }}>
               También te podría gustar
@@ -219,7 +178,7 @@ export default function catalogo() {
                   <p className="precio">{formatearPrecio(rec.precio)}</p>
                   <button 
                     className="btn-primary" 
-                    onClick={() => agregarAlCarrito(rec)}
+                    onClick={() => handleAgregarAlPedido(rec)}
                   >
                     Agregar al Pedido
                   </button>
@@ -229,10 +188,6 @@ export default function catalogo() {
           </section>
         </main>
       ) : (
-
-        /* =========================================================
-            VISTA 2: LISTADO GENERAL Y SIDEBAR DE CATEGORÍAS
-           ========================================================= */
         <>
           <aside className="sidebar">
             <h3>Categorías</h3>
@@ -277,7 +232,6 @@ export default function catalogo() {
               ) : (
                 productosFiltrados.map((p) => (
                   <article key={p.id} className="hero-banner">
-                    {/* Al presionar la imagen o el título se abre la vista de detalle[cite: 7] */}
                     <img 
                       src={p.imagen} 
                       alt={p.nombre} 
@@ -291,7 +245,7 @@ export default function catalogo() {
                     <p className="precio">{formatearPrecio(p.precio)}</p>
                     <button 
                       className="btn-primary" 
-                      onClick={() => agregarAlCarrito(p)}
+                      onClick={() => handleAgregarAlPedido(p)}
                     >
                       Agregar al Pedido
                     </button>

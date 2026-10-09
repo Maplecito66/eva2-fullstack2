@@ -1,32 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 
 export default function Navbar() {
+  const { usuario, logout, isAdmin } = useAuth();
+  const { getTotalItems } = useCart();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  // Estados de Usuario y Categorías MySQL
-  const [usuario, setUsuario] = useState(null);
   const [listaCategorias, setListaCategorias] = useState([]);
   const [menuCategoriasAbierto, setMenuCategoriasAbierto] = useState(false);
-  const cantidadCarrito = 0;
 
-  // 1. Cargar Usuario activo desde localStorage
-  const cargarUsuario = () => {
-    const usuarioGuardado = localStorage.getItem('usuarioActivo');
-    if (usuarioGuardado) {
-      try {
-        setUsuario(JSON.parse(usuarioGuardado));
-      } catch (error) {
-        console.error('Error al parsear el usuario:', error);
-        setUsuario(null);
-      }
-    } else {
-      setUsuario(null);
-    }
-  };
-
-  // 2. Obtener categorías desde backend MySQL
   const obtenerCategoriasBD = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/categorias');
@@ -40,18 +25,11 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    cargarUsuario();
     obtenerCategoriasBD();
 
-    // Listener para autenticación
-    const manejarAuthChange = () => cargarUsuario();
-    window.addEventListener('authChange', manejarAuthChange);
-
-    // Listener para sincronización en tiempo real de categorías
     const manejarCambioCategoria = () => obtenerCategoriasBD();
     window.addEventListener('categoryChange', manejarCambioCategoria);
 
-    // Cerrar el menú desplegable al hacer clic fuera
     const manejarClicFuera = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setMenuCategoriasAbierto(false);
@@ -60,15 +38,13 @@ export default function Navbar() {
     document.addEventListener('mousedown', manejarClicFuera);
 
     return () => {
-      window.removeEventListener('authChange', manejarAuthChange);
       window.removeEventListener('categoryChange', manejarCambioCategoria);
       document.removeEventListener('mousedown', manejarClicFuera);
     };
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('usuarioActivo');
-    window.dispatchEvent(new Event('authChange'));
+    logout();
     navigate('/login');
   };
 
@@ -83,7 +59,6 @@ export default function Navbar() {
 
   return (
     <header className="header-container">
-      {/* CABECERA PRINCIPAL: LOGO, MENÚ Y CARRITO */}
       <div className="main-header">
         <Link to="/" className="logo text-decoration-none">
           <span className="logo-icon">🍔</span>
@@ -100,7 +75,6 @@ export default function Navbar() {
 
             <li className="separator">|</li>
 
-            {/* MENÚ DE CATEGORÍAS CON DESPLEGABLE Y SINCRONIZACIÓN MYSQL */}
             <li className="dropdown-categorias-container" ref={dropdownRef}>
               <NavLink 
                 to="/categorias" 
@@ -166,11 +140,10 @@ export default function Navbar() {
         </nav>
 
         <Link to="/carrito" className="cart-btn">
-          🛒 Mi Pedido ({cantidadCarrito})
+          🛒 Mi Pedido ({getTotalItems()})
         </Link>
       </div>
 
-      {/* BARRA SUPERIOR DE USUARIO (ADMIN / SESIÓN) */}
       <div className="user-subbar">
         <div className="user-links">
           {usuario ? (
@@ -179,7 +152,7 @@ export default function Navbar() {
                 Hola, <strong>{usuario.nombre}</strong>
               </span>
 
-              {usuario.esAdmin && (
+              {isAdmin() && (
                 <>
                   <span className="separator">|</span>
                   <Link to="/admin" className="admin-link">
@@ -190,6 +163,7 @@ export default function Navbar() {
 
               <span className="separator">|</span>
               <button 
+                type="button"
                 onClick={handleLogout} 
                 className="btn-logout-link" 
                 style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
