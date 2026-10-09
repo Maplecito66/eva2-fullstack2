@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export default function Categorias() {
+export default function catalogo() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoriaURL = searchParams.get('cat') || 'todas';
 
