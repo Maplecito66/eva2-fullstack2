@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
+// Importar el hook del Contexto para usarlo en el Guardián
+import { useAuth } from './context/AuthContext';
+
 // Componentes
 import Layout from './components/Client/Layout';
 
@@ -22,13 +25,17 @@ import ProductosAdmin from './pages/admin/ProductosAdmin';
 import UsuariosAdmin from './pages/admin/UsuariosAdmin';
 import Ordenes from './pages/admin/Ordenes';
 import AdminLayout from './components/admin/AdminLayout';
+import CategoriasAdmin from './pages/admin/CategoriasAdmin';
+import ReportesAdmin from './pages/admin/ReportesAdmin';
+import PerfilAdmin from './pages/admin/PerfilAdmin';
 
-// MINI GUARDIÁN
+
+// MINI GUARDIÁN PROFESIONAL
 const RutaAdministrador = ({ children }) => {
-  const usuarioGuardado = localStorage.getItem('usuarioActivo');
-  const usuario = usuarioGuardado ? JSON.parse(usuarioGuardado) : null;
+  const { usuario, isAdmin } = useAuth(); // Ahora usa el Contexto global
 
-  if (!usuario || !usuario.esAdmin) {
+  // Si no hay usuario o la función isAdmin() da falso, patada al inicio
+  if (!usuario || !isAdmin()) {
     return <Navigate to="/" replace />;
   }
   return children;
@@ -60,6 +67,9 @@ export default function App() {
           <Route path="productos" element={<ProductosAdmin />} />
           <Route path="usuarios" element={<UsuariosAdmin />} />
           <Route path="ordenes" element={<Ordenes />} />
+          <Route path="categorias" element={<CategoriasAdmin />} />
+          <Route path="reportes" element={<ReportesAdmin />} />
+          <Route path="perfil" element={<PerfilAdmin />} />
         </Route>
       </Routes>
     </Router>

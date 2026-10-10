@@ -407,7 +407,11 @@ app.post('/api/ordenes', async (req, res) => {
   }
 });
 
-// Obtener todas las órdenes de todos los usuarios (Vista Administrador)
+// =============================================================
+// 6. PANEL DE ADMINISTRACIÓN - GESTIÓN DE ÓRDENES
+// =============================================================
+
+// Obtener todas las órdenes de la tienda para la tabla del administrador
 app.get('/api/admin/ordenes', async (req, res) => {
   try {
     const query = `
@@ -433,7 +437,7 @@ app.get('/api/admin/ordenes', async (req, res) => {
   }
 });
 
-// Obtener el detalle de productos de una orden específica
+// Obtener los productos específicos comprados en una orden (Para el Modal "Ver Detalles")
 app.get('/api/ordenes/:orden_id/detalle', async (req, res) => {
   const { orden_id } = req.params;
   try {
@@ -458,25 +462,7 @@ app.get('/api/ordenes/:orden_id/detalle', async (req, res) => {
   }
 });
 
-// Obtener las compras de un usuario en particular (Historial Personal)
-app.get('/api/ordenes/usuario/:usuario_id', async (req, res) => {
-  const { usuario_id } = req.params;
-  try {
-    const query = `
-      SELECT id, total, fecha, estado 
-      FROM ordenes 
-      WHERE usuario_id = ? 
-      ORDER BY fecha DESC
-    `;
-    const [results] = await db.query(query, [usuario_id]);
-    res.json(results);
-  } catch (error) {
-    console.error('Error al obtener el historial del usuario:', error);
-    res.status(500).json({ error: 'Error al consultar tu historial de compras.' });
-  }
-});
-
-// Cambiar estado de una orden (Admin: Pendiente -> En Camino -> Entregado)
+// Cambiar el estado de envío de una orden (Ej: Pendiente -> En Camino -> Entregado)
 app.put('/api/admin/ordenes/:id/estado', async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
@@ -494,10 +480,35 @@ app.put('/api/admin/ordenes/:id/estado', async (req, res) => {
   }
 });
 
+
 // =============================================================
-// 6. ADMINISTRACIÓN DE PRODUCTOS
+// 7. HISTORIAL DEL CLIENTE (VISTA DE USUARIO NORMAL)
 // =============================================================
 
+// Obtener las compras de un usuario específico para su vista de "Mi Perfil"
+app.get('/api/ordenes/usuario/:usuario_id', async (req, res) => {
+  const { usuario_id } = req.params;
+  try {
+    const query = `
+      SELECT id, total, fecha, estado 
+      FROM ordenes 
+      WHERE usuario_id = ? 
+      ORDER BY fecha DESC
+    `;
+    const [results] = await db.query(query, [usuario_id]);
+    res.json(results);
+  } catch (error) {
+    console.error('Error al obtener el historial del usuario:', error);
+    res.status(500).json({ error: 'Error al consultar tu historial de compras.' });
+  }
+});
+
+
+// =============================================================
+// 8. PANEL DE ADMINISTRACIÓN - CRUD DE PRODUCTOS E INVENTARIO
+// =============================================================
+
+// Leer: Obtener todos los productos para la tabla del administrador (Incluye nombre de categoría)
 app.get('/api/admin/productos', async (req, res) => {
   try {
     const query = `
@@ -513,6 +524,7 @@ app.get('/api/admin/productos', async (req, res) => {
   }
 });
 
+// Crear: Registrar un nuevo producto en la base de datos
 app.post('/api/productos', async (req, res) => {
   const { codigo, nombre, id_categoria, precio, stock, descripcion, imagen } = req.body;
   const sql = 'INSERT INTO productos (codigo, nombre, id_categoria, precio, stock, descripcion, imagen) VALUES (?, ?, ?, ?, ?, ?, ?)';
@@ -524,6 +536,7 @@ app.post('/api/productos', async (req, res) => {
   }
 });
 
+// Actualizar: Editar la información de un producto existente
 app.put('/api/productos/:id', async (req, res) => {
   const { id } = req.params;
   const { codigo, nombre, id_categoria, precio, stock, descripcion, imagen } = req.body;
@@ -536,12 +549,65 @@ app.put('/api/productos/:id', async (req, res) => {
   }
 });
 
+// Eliminar: Borrar un producto de forma permanente
 app.delete('/api/productos/:id', async (req, res) => {
   try {
     await db.query('DELETE FROM productos WHERE id = ?', [req.params.id]);
     res.json({ mensaje: 'Producto eliminado correctamente' });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar el producto.' });
+  }
+});
+
+
+// =============================================================
+// 9. PANEL DE ADMINISTRACIÓN - CRUD DE CATEGORÍAS
+// =============================================================
+
+// Leer: Obtener lista de categorías para el formulario de Productos y la tabla
+app.get('/api/categorias', async (req, res) => {
+  try {
+    const [results] = await db.query('SELECT * FROM categorias');
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al consultar categorías.' });
+  }
+});
+
+// Crear: Agregar una nueva categoría (Ej: "Vegano")
+app.post('/api/categorias', async (req, res) => {
+  const { nombre_categoria } = req.body;
+  try {
+    const [result] = await db.query('INSERT INTO categorias (nombre_categoria) VALUES (?)', [nombre_categoria]);
+    res.status(201).json({ mensaje: 'Categoría creada con éxito', id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear la categoría.' });
+  }
+});
+
+// Actualizar: Editar el nombre de una categoría
+app.put('/api/categorias/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre_categoria } = req.body;
+  try {
+    await db.query('UPDATE categorias SET nombre_categoria = ? WHERE id_categoria = ?', [nombre_categoria, id]);
+    res.json({ mensaje: 'Categoría actualizada correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar la categoría.' });
+  }
+});
+
+// Eliminar: Borrar una categoría (Valida que no tenga productos asociados)
+app.delete('/api/categorias/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM categorias WHERE id_categoria = ?', [id]);
+    res.json({ mensaje: 'Categoría eliminada correctamente' });
+  } catch (error) {
+    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({ error: 'No se puede eliminar. Hay productos que usan esta categoría.' });
+    }
+    res.status(500).json({ error: 'Error al eliminar la categoría.' });
   }
 });
 

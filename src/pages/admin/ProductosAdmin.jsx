@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 
 export default function ProductosAdmin() {
   const [productos, setProductos] = useState([]);
+  const [categoriasLista, setCategoriasLista] = useState([]); // NUEVO: Para guardar las categorías de la BD
   const [formData, setFormData] = useState({
     codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: ''
   });
   const [editandoId, setEditandoId] = useState(null);
   const [filtroActivo, setFiltroActivo] = useState('todos');
 
-  // Estado para el Toast de notificaciones
+  // Estado para el Toast de notificaciones (Errores y Éxitos)
   const [toast, setToast] = useState({ mostrar: false, mensaje: '', tipo: 'success' });
   
-  // NUEVO: Estado para controlar el Modal de confirmación de eliminación
+  // Estado para controlar el Modal de confirmación de eliminación
   const [productoAEliminar, setProductoAEliminar] = useState(null);
 
   const mostrarMensaje = (mensaje, tipo = 'success') => {
@@ -19,20 +20,20 @@ export default function ProductosAdmin() {
     setTimeout(() => setToast({ mostrar: false, mensaje: '', tipo: 'success' }), 3000);
   };
 
-  const obtenerProductos = async () => {
+  const obtenerDatos = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/productos');
-      if (response.ok) {
-        const data = await response.json();
-        setProductos(data);
-      }
+      const resProd = await fetch('http://localhost:5000/api/admin/productos', { cache: 'no-store' });
+      const resCat = await fetch('http://localhost:5000/api/categorias', { cache: 'no-store' });
+      
+      if (resProd.ok) setProductos(await resProd.json());
+      if (resCat.ok) setCategoriasLista(await resCat.json());
     } catch (error) {
-      mostrarMensaje('Error de conexión al cargar productos.', 'danger');
+      mostrarMensaje('Error de conexión al cargar la base de datos.', 'danger');
     }
   };
 
   useEffect(() => {
-    obtenerProductos();
+    obtenerDatos();
   }, []);
 
   const handleChange = (e) => {
@@ -54,7 +55,7 @@ export default function ProductosAdmin() {
       });
 
       if (response.ok) {
-        obtenerProductos();
+        obtenerDatos();
         setFormData({ codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: '' }); 
         setEditandoId(null);
         mostrarMensaje(`✅ ¡"${formData.nombre}" guardado con éxito!`);
@@ -79,7 +80,6 @@ export default function ProductosAdmin() {
     setEditandoId(producto.id);
   };
 
-  // NUEVO: Esta función ahora ejecuta la eliminación real al confirmar en el Modal
   const confirmarEliminacion = async () => {
     if (!productoAEliminar) return;
     
@@ -88,7 +88,7 @@ export default function ProductosAdmin() {
         method: 'DELETE'
       });
       if (response.ok) {
-        obtenerProductos();
+        obtenerDatos();
         mostrarMensaje(`🗑️ "${productoAEliminar.nombre}" eliminado correctamente.`, 'warning');
       } else {
         mostrarMensaje('❌ No se pudo eliminar. Verifica que no existan órdenes atadas.', 'danger');
@@ -97,7 +97,6 @@ export default function ProductosAdmin() {
       mostrarMensaje('Error de red al eliminar.', 'danger');
     }
     
-    // Cierra el modal limpiando el estado
     setProductoAEliminar(null);
   };
 
@@ -115,7 +114,7 @@ export default function ProductosAdmin() {
         </div>
       )}
 
-      {/* NUEVO: Modal de Confirmación de Eliminación Personalizado */}
+      {/* Modal de Confirmación de Eliminación */}
       {productoAEliminar && (
         <>
           <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
@@ -128,7 +127,7 @@ export default function ProductosAdmin() {
                 </div>
                 <div className="modal-body">
                   <p>¿Estás seguro de que deseas eliminar el producto <strong>{productoAEliminar.nombre}</strong>?</p>
-                  <p className="text-muted small mb-0">Esta acción no se puede deshacer y podría afectar el historial si el producto ya fue vendido.</p>
+                  <p className="text-muted small mb-0">Esta acción no se puede deshacer.</p>
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="btn btn-secondary" onClick={() => setProductoAEliminar(null)}>Cancelar</button>
@@ -160,13 +159,14 @@ export default function ProductosAdmin() {
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Categoría</label>
+                  {/* SELECT DINÁMICO QUE LEE DE LA BASE DE DATOS */}
                   <select className="form-select" name="id_categoria" value={formData.id_categoria} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    <option value="1">Pizzas y Hamburguesas</option>
-                    <option value="2">Saludable</option>
-                    <option value="3">Postres</option>
-                    <option value="4">Bebidas</option>
-                    <option value="5">Ofertas</option>
+                    <option value="">Seleccione una categoría...</option>
+                    {categoriasLista.map(cat => (
+                      <option key={cat.id_categoria} value={cat.id_categoria}>
+                        {cat.nombre_categoria}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="row mb-3">
@@ -219,7 +219,7 @@ export default function ProductosAdmin() {
                     <tr>
                       <th>Código</th>
                       <th>Nombre</th>
-                      <th>Categoría (ID)</th>
+                      <th>Categoría</th>
                       <th>Precio</th>
                       <th>Existencias</th>
                       <th>Acciones</th>
@@ -233,28 +233,31 @@ export default function ProductosAdmin() {
                         </td>
                       </tr>
                     ) : (
-                      productosFiltrados.map((producto) => (
-                        <tr key={producto.id}>
-                          <td><span className="badge bg-secondary">{producto.codigo}</span></td>
-                          <td className="fw-bold">{producto.nombre}</td>
-                          <td>{producto.id_categoria}</td>
-                          <td>${producto.precio}</td>
-                          <td>
-                            <span className={`badge ${producto.stock <= 10 ? 'bg-danger' : 'bg-success'}`}>
-                              {producto.stock}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="btn-group btn-group-sm">
-                              <button onClick={() => handleEdit(producto)} className="btn btn-outline-primary">Editar</button>
-                              
-                              {/* NUEVO: En lugar de eliminar de inmediato, esto abre el Modal */}
-                              <button onClick={() => setProductoAEliminar(producto)} className="btn btn-outline-danger">Eliminar</button>
-                              
-                            </div>
-                          </td>
-                        </tr>
-                      ))
+                      productosFiltrados.map((producto) => {
+                        // Encontrar el nombre de la categoría para mostrarlo bonito en la tabla
+                        const catObj = categoriasLista.find(c => c.id_categoria === producto.id_categoria);
+                        const nombreCat = catObj ? catObj.nombre_categoria : producto.id_categoria;
+
+                        return (
+                          <tr key={producto.id}>
+                            <td><span className="badge bg-secondary">{producto.codigo}</span></td>
+                            <td className="fw-bold">{producto.nombre}</td>
+                            <td>{nombreCat}</td>
+                            <td>${producto.precio}</td>
+                            <td>
+                              <span className={`badge ${producto.stock <= 10 ? 'bg-danger' : 'bg-success'}`}>
+                                {producto.stock}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="btn-group btn-group-sm">
+                                <button onClick={() => handleEdit(producto)} className="btn btn-outline-primary">Editar</button>
+                                <button onClick={() => setProductoAEliminar(producto)} className="btn btn-outline-danger">Eliminar</button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>

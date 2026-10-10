@@ -37,8 +37,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('usuarioActivo');
   };
 
-  const isAdmin = () => Boolean(usuario?.esAdmin);
-
+const isAdmin = () => Boolean(usuario?.esadmin === 1 || usuario?.esadmin === true || usuario?.esAdmin === 1);
   return (
     <AuthContext.Provider value={{ usuario, login, logout, isAdmin, cargando }}>
       {!cargando && children}
