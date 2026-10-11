@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function catalogo() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const categoriaURL = searchParams.get('cat') || 'todas';
   const idURL = searchParams.get('id');
 
-  const { addToCart } = useCart();
+  const { agregarAlCarrito } = useCart();
+  const { usuario } = useAuth();
 
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -72,10 +75,28 @@ export default function catalogo() {
   };
 
   const handleAgregarAlPedido = async (producto) => {
-    await addToCart(producto);
-    setMensajeToast(`¡"${producto.nombre}" agregado al pedido!`);
-    setTimeout(() => setMensajeToast(''), 3000);
-  };
+  if (!usuario) {
+    setMensajeToast('⚠️ Debes iniciar sesión para agregar productos al pedido.');
+    setTimeout(() => {
+      setMensajeToast('');
+      navigate('/login');
+    }, 2000);
+    return;
+  }
+
+  const resultado = await agregarAlCarrito(producto);
+  if (resultado?.requiereLogin) {
+    setMensajeToast('⚠️ Debes iniciar sesión para agregar productos al pedido.');
+    setTimeout(() => {
+      setMensajeToast('');
+      navigate('/login');
+    }, 2000);
+    return;
+  }
+
+  setMensajeToast(`¡"${producto.nombre}" agregado al pedido!`);
+  setTimeout(() => setMensajeToast(''), 3000);
+};
 
   const verDetalle = (prod) => {
     setProductoDetalle(prod);
@@ -101,7 +122,7 @@ export default function catalogo() {
   if (cargando) {
     return (
       <div className="container">
-        <main className="main-content" style={{ textAlign: 'center', padding: '4rem 0' }}>
+        <main className="main-content text-center-padding">
           <h2>Cargando productos de la base de datos...</h2>
         </main>
       </div>
@@ -111,8 +132,8 @@ export default function catalogo() {
   if (errorBD) {
     return (
       <div className="container">
-        <main className="main-content" style={{ textAlign: 'center', padding: '4rem 0' }}>
-          <div className="alert-error" style={{ display: 'inline-block' }}>{errorBD}</div>
+        <main className="main-content text-center-padding">
+          <div className="alert-error">{errorBD}</div>
         </main>
       </div>
     );
@@ -123,8 +144,8 @@ export default function catalogo() {
       {mensajeToast && <div className="toast-notificacion">🛒 {mensajeToast}</div>}
 
       {productoDetalle ? (
-        <main className="main-content" style={{ width: '100%' }}>
-          <div className="back-container" style={{ marginBottom: '1.5rem' }}>
+        <main className="main-content full-width">
+          <div className="back-container margin-bottom-15">
             <button onClick={volverAlListado} className="btn-volver-blog">
               ← Volver al Menú
             </button>
@@ -158,10 +179,8 @@ export default function catalogo() {
             </div>
           </div>
 
-          <section className="productos-recomendados" style={{ marginTop: '3rem' }}>
-            <h3 style={{ color: 'var(--primary-color)', marginBottom: '1.5rem', textAlign: 'center' }}>
-              También te podría gustar
-            </h3>
+          <section className="productos-recomendados margin-top-30">
+            <h3>También te podría gustar</h3>
             <div className="productos-grid">
               {obtenerRecomendados(productoDetalle.id).map((rec) => (
                 <article key={rec.id} className="hero-banner">
@@ -170,9 +189,9 @@ export default function catalogo() {
                     alt={rec.nombre} 
                     onClick={() => verDetalle(rec)}
                     onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=Sin+Imagen'; }}
-                    style={{ cursor: 'pointer' }}
+                    className="clickable"
                   />
-                  <h3 onClick={() => verDetalle(rec)} style={{ cursor: 'pointer' }}>
+                  <h3 onClick={() => verDetalle(rec)} className="clickable">
                     {rec.nombre}
                   </h3>
                   <p className="precio">{formatearPrecio(rec.precio)}</p>
@@ -237,9 +256,9 @@ export default function catalogo() {
                       alt={p.nombre} 
                       onClick={() => verDetalle(p)}
                       onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=Sin+Imagen'; }}
-                      style={{ cursor: 'pointer' }}
+                      className="clickable"
                     />
-                    <h3 onClick={() => verDetalle(p)} style={{ cursor: 'pointer' }}>
+                    <h3 onClick={() => verDetalle(p)} className="clickable">
                       {p.nombre}
                     </h3>
                     <p className="precio">{formatearPrecio(p.precio)}</p>

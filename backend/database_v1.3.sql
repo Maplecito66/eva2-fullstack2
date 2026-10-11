@@ -33,10 +33,10 @@ CREATE TABLE IF NOT EXISTS `carrito` (
   CONSTRAINT `carrito_ibfk_2` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Volcando datos para la tabla sabor_aroma.carrito: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla sabor_aroma.carrito: ~2 rows (aproximadamente)
 INSERT INTO `carrito` (`id`, `usuario_id`, `producto_id`, `cantidad`, `created_at`) VALUES
-	(1, 3, 1, 1, '2026-10-09 03:01:38'),
-	(2, 3, 2, 1, '2026-10-09 03:01:42');
+	(1, 3, 1, 1, '2026-10-09 06:01:38'),
+	(2, 3, 2, 1, '2026-10-09 06:01:42');
 
 -- Volcando estructura para tabla sabor_aroma.categorias
 CREATE TABLE IF NOT EXISTS `categorias` (
@@ -52,6 +52,105 @@ INSERT INTO `categorias` (`id_categoria`, `nombre_categoria`) VALUES
 	(3, 'Postres'),
 	(4, 'Bebidas');
 
+-- Volcando estructura para tabla sabor_aroma.comunas
+CREATE TABLE IF NOT EXISTS `comunas` (
+  `id_comuna` int NOT NULL AUTO_INCREMENT,
+  `nombre_comuna` varchar(100) NOT NULL,
+  `id_region` int NOT NULL,
+  PRIMARY KEY (`id_comuna`),
+  KEY `fk_comunas_regiones` (`id_region`),
+  CONSTRAINT `fk_comunas_regiones` FOREIGN KEY (`id_region`) REFERENCES `regiones` (`id_region`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=87 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando datos para la tabla sabor_aroma.comunas: ~86 rows (aproximadamente)
+INSERT INTO `comunas` (`id_comuna`, `nombre_comuna`, `id_region`) VALUES
+	(1, 'Arica', 1),
+	(2, 'Camarones', 1),
+	(3, 'Putre', 1),
+	(4, 'General Lagos', 1),
+	(5, 'Iquique', 2),
+	(6, 'Alto Hospicio', 2),
+	(7, 'Pozo Almonte', 2),
+	(8, 'Pica', 2),
+	(9, 'Antofagasta', 3),
+	(10, 'Calama', 3),
+	(11, 'Tocopilla', 3),
+	(12, 'Mejillones', 3),
+	(13, 'Copiapó', 4),
+	(14, 'Vallenar', 4),
+	(15, 'Caldera', 4),
+	(16, 'Chañaral', 4),
+	(17, 'La Serena', 5),
+	(18, 'Coquimbo', 5),
+	(19, 'Ovalle', 5),
+	(20, 'Illapel', 5),
+	(21, 'Vicuña', 5),
+	(22, 'Valparaíso', 6),
+	(23, 'Viña del Mar', 6),
+	(24, 'Quilpué', 6),
+	(25, 'Villa Alemana', 6),
+	(26, 'Concón', 6),
+	(27, 'San Antonio', 6),
+	(28, 'Quillota', 6),
+	(29, 'San Felipe', 6),
+	(30, 'Los Andes', 6),
+	(31, 'Santiago', 7),
+	(32, 'Providencia', 7),
+	(33, 'Las Condes', 7),
+	(34, 'Vitacura', 7),
+	(35, 'Ñuñoa', 7),
+	(36, 'San Joaquín', 7),
+	(37, 'La Cisterna', 7),
+	(38, 'Maipú', 7),
+	(39, 'Puente Alto', 7),
+	(40, 'La Florida', 7),
+	(41, 'Pudahuel', 7),
+	(42, 'Quilicura', 7),
+	(43, 'San Bernardo', 7),
+	(44, 'Colina', 7),
+	(45, 'Melipilla', 7),
+	(46, 'Talagante', 7),
+	(47, 'Rancagua', 8),
+	(48, 'San Fernando', 8),
+	(49, 'Pichilemu', 8),
+	(50, 'Machalí', 8),
+	(51, 'Rengo', 8),
+	(52, 'Talca', 9),
+	(53, 'Curicó', 9),
+	(54, 'Linares', 9),
+	(55, 'Constitución', 9),
+	(56, 'Cauquenes', 9),
+	(57, 'Chillán', 10),
+	(58, 'Chillán Viejo', 10),
+	(59, 'San Carlos', 10),
+	(60, 'Bulnes', 10),
+	(61, 'Concepción', 11),
+	(62, 'Talcahuano', 11),
+	(63, 'San Pedro de la Paz', 11),
+	(64, 'Chiguayante', 11),
+	(65, 'Los Ángeles', 11),
+	(66, 'Coronel', 11),
+	(67, 'Temuco', 12),
+	(68, 'Padre Las Casas', 12),
+	(69, 'Villarrica', 12),
+	(70, 'Pucón', 12),
+	(71, 'Angol', 12),
+	(72, 'Valdivia', 13),
+	(73, 'La Unión', 13),
+	(74, 'Río Bueno', 13),
+	(75, 'Panguipulli', 13),
+	(76, 'Puerto Montt', 14),
+	(77, 'Osorno', 14),
+	(78, 'Castro', 14),
+	(79, 'Puerto Varas', 14),
+	(80, 'Ancud', 14),
+	(81, 'Coyhaique', 15),
+	(82, 'Aysén', 15),
+	(83, 'Chile Chico', 15),
+	(84, 'Punta Arenas', 16),
+	(85, 'Puerto Natales', 16),
+	(86, 'Porvenir', 16);
+
 -- Volcando estructura para tabla sabor_aroma.detalle_ordenes
 CREATE TABLE IF NOT EXISTS `detalle_ordenes` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -64,7 +163,7 @@ CREATE TABLE IF NOT EXISTS `detalle_ordenes` (
   KEY `producto_id` (`producto_id`),
   CONSTRAINT `detalle_ordenes_ibfk_1` FOREIGN KEY (`orden_id`) REFERENCES `ordenes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `detalle_ordenes_ibfk_2` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Volcando datos para la tabla sabor_aroma.detalle_ordenes: ~22 rows (aproximadamente)
 INSERT INTO `detalle_ordenes` (`id`, `orden_id`, `producto_id`, `cantidad`, `precio_unitario`) VALUES
@@ -163,6 +262,32 @@ INSERT INTO `productos` (`id`, `codigo`, `nombre`, `id_categoria`, `id_oferta`, 
 	(11, 'P011', 'Cheesecake de Frutos Rojos', 3, NULL, 'Pastel de queso cremoso con mermelada.', 5290, 15, 'img/Cheesecake de Frutos Rojos.jpg'),
 	(12, 'P012', 'Café Cappuccino Frappé', 4, NULL, 'Café licuado con hielo, leche y crema.', 3890, 60, 'img/Café Cappuccino Frappé.jpg');
 
+-- Volcando estructura para tabla sabor_aroma.regiones
+CREATE TABLE IF NOT EXISTS `regiones` (
+  `id_region` int NOT NULL AUTO_INCREMENT,
+  `nombre_region` varchar(100) NOT NULL,
+  PRIMARY KEY (`id_region`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando datos para la tabla sabor_aroma.regiones: ~16 rows (aproximadamente)
+INSERT INTO `regiones` (`id_region`, `nombre_region`) VALUES
+	(1, 'Arica y Parinacota'),
+	(2, 'Tarapacá'),
+	(3, 'Antofagasta'),
+	(4, 'Atacama'),
+	(5, 'Coquimbo'),
+	(6, 'Valparaíso'),
+	(7, 'Región Metropolitana de Santiago'),
+	(8, 'O\'Higgins'),
+	(9, 'Maule'),
+	(10, 'Ñuble'),
+	(11, 'Bío Bío'),
+	(12, 'Araucanía'),
+	(13, 'Los Ríos'),
+	(14, 'Los Lagos'),
+	(15, 'Aysén'),
+	(16, 'Magallanes');
+
 -- Volcando estructura para tabla sabor_aroma.usuarios
 CREATE TABLE IF NOT EXISTS `usuarios` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -171,17 +296,18 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `password` varchar(255) NOT NULL,
   `region` varchar(100) DEFAULT NULL,
   `comuna` varchar(100) DEFAULT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
   `esadmin` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Volcando datos para la tabla sabor_aroma.usuarios: ~3 rows (aproximadamente)
-INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `region`, `comuna`, `esadmin`, `created_at`) VALUES
-	(1, 'Cliente Gmail', 'cliente.prueba@gmail.com', '123456', 'Región Metropolitana', 'Santiago', 0, '2026-10-06 17:33:04'),
-	(2, 'Estudiante Duoc', 'estudiante@duocuc.cl', '123456', 'Región Metropolitana', 'Providencia', 0, '2026-10-06 17:33:04'),
-	(3, 'Profesor Duoc', 'profesor@profesor.duoc.cl', '123456', 'Región Metropolitana', 'San Joaquín', 1, '2026-10-06 17:33:04');
+INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `region`, `comuna`, `telefono`, `esadmin`, `created_at`) VALUES
+	(1, 'Cliente Gmail', 'cliente.prueba@gmail.com', '123456', 'Región Metropolitana de Santiago', 'Santiago', '+56912345678', 0, '2026-10-06 20:33:04'),
+	(2, 'Estudiante Duoc', 'estudiante@duoc.cl', '123456', 'Región Metropolitana de Santiago', 'Providencia', '+56987654321', 0, '2026-10-06 20:33:04'),
+	(3, 'Profesor Duoc', 'profesor@profesor.duoc.cl', '123456', 'Región Metropolitana de Santiago', 'San Joaquín', '+56955554444', 1, '2026-10-06 20:33:04');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

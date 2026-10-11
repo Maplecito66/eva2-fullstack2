@@ -12,7 +12,44 @@ app.get('/', (req, res) => {
 });
 
 // =============================================================
-// 1. ENDPOINTS DE CATEGORÍAS
+// 1. ENDPOINTS DE REGIONES Y COMUNAS
+// =============================================================
+
+// Obtener todas las regiones desde MySQL
+app.get('/api/regiones', async (req, res) => {
+  try {
+    const [results] = await db.query('SELECT * FROM regiones ORDER BY nombre_region ASC');
+    res.json(results);
+  } catch (error) {
+    console.error('Error al consultar regiones:', error);
+    res.status(500).json({ error: 'Error al obtener las regiones de la base de datos.' });
+  }
+});
+
+// Obtener comunas filtradas por nombre o ID de región
+app.get('/api/comunas', async (req, res) => {
+  const { region } = req.query;
+  try {
+    let query = 'SELECT c.id_comuna, c.nombre_comuna FROM comunas c';
+    let params = [];
+
+    if (region) {
+      query += ' JOIN regiones r ON c.id_region = r.id_region WHERE r.nombre_region = ? OR r.id_region = ?';
+      params.push(region, region);
+    }
+
+    query += ' ORDER BY c.nombre_comuna ASC';
+
+    const [results] = await db.query(query, params);
+    res.json(results);
+  } catch (error) {
+    console.error('Error al consultar comunas:', error);
+    res.status(500).json({ error: 'Error al obtener las comunas de la base de datos.' });
+  }
+});
+
+// =============================================================
+// 2. ENDPOINTS DE CATEGORÍAS
 // =============================================================
 
 app.get('/api/categorias', async (req, res) => {
@@ -26,7 +63,7 @@ app.get('/api/categorias', async (req, res) => {
 });
 
 // =============================================================
-// 2. ENDPOINTS DE PRODUCTOS
+// 3. ENDPOINTS DE PRODUCTOS
 // =============================================================
 
 // Obtener catálogo público con categorías y ofertas
@@ -123,17 +160,25 @@ app.get('/api/productos/categoria/:categoria', async (req, res) => {
 });
 
 // =============================================================
-// 3. ENDPOINTS DE AUTENTICACIÓN Y USUARIOS
+// 4. ENDPOINTS DE AUTENTICACIÓN Y USUARIOS
 // =============================================================
 
-// Registro de usuarios clientes
+// Registro de usuarios con validación de rol admin según el correo
 app.post('/api/registro', async (req, res) => {
-  const { nombre, email, password, region, comuna } = req.body;
-  const sql = 'INSERT INTO usuarios (nombre, email, password, region, comuna, esadmin) VALUES (?, ?, ?, ?, ?, 0)';
+  const { nombre, email, password, region, comuna, telefono, esadmin } = req.body;
+
+  // Detección automática: si termina en @profesor.duoc.cl es Administrador (1)
+  const esAdminRol = (email && email.toLowerCase().endsWith('@profesor.duoc.cl')) ? 1 : (esadmin || 0);
+
+  const sql = 'INSERT INTO usuarios (nombre, email, password, region, comuna, telefono, esadmin) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
   try {
-    const [result] = await db.query(sql, [nombre, email, password, region, comuna]);
-    res.status(201).json({ mensaje: 'Usuario registrado con éxito', id: result.insertId });
+    const [result] = await db.query(sql, [nombre, email, password, region, comuna, telefono || null, esAdminRol]);
+    res.status(201).json({ 
+      mensaje: 'Usuario registrado con éxito', 
+      id: result.insertId,
+      esadmin: esAdminRol 
+    });
   } catch (error) {
     console.error('Error al registrar usuario:', error);
     if (error.code === 'ER_DUP_ENTRY') {
@@ -146,7 +191,7 @@ app.post('/api/registro', async (req, res) => {
 // Login de usuarios
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-  const sql = 'SELECT id, nombre, email, region, comuna, esadmin FROM usuarios WHERE email = ? AND password = ?';
+  const sql = 'SELECT id, nombre, email, region, comuna, telefono, esadmin FROM usuarios WHERE email = ? AND password = ?';
 
   try {
     const [results] = await db.query(sql, [email, password]);
@@ -165,7 +210,7 @@ app.post('/api/login', async (req, res) => {
 // CRUD de Usuarios para el Panel Administrador
 app.get('/api/usuarios', async (req, res) => {
   try {
-    const [results] = await db.query('SELECT id, nombre, email, region, comuna, esadmin FROM usuarios ORDER BY id DESC');
+    const [results] = await db.query('SELECT id, nombre, email, region, comuna, telefono, esadmin FROM usuarios ORDER BY id DESC');
     res.json(results);
   } catch (error) {
     res.status(500).json({ error: 'Error al consultar usuarios.' });
@@ -173,10 +218,10 @@ app.get('/api/usuarios', async (req, res) => {
 });
 
 app.post('/api/usuarios', async (req, res) => {
-  const { nombre, email, password, region, comuna, esadmin } = req.body;
-  const sql = 'INSERT INTO usuarios (nombre, email, password, region, comuna, esadmin) VALUES (?, ?, ?, ?, ?, ?)';
+  const { nombre, email, password, region, comuna, telefono, esadmin } = req.body;
+  const sql = 'INSERT INTO usuarios (nombre, email, password, region, comuna, telefono, esadmin) VALUES (?, ?, ?, ?, ?, ?, ?)';
   try {
-    const [result] = await db.query(sql, [nombre, email, password, region, comuna, esadmin || 0]);
+    const [result] = await db.query(sql, [nombre, email, password, region, comuna, telefono || null, esadmin || 0]);
     res.status(201).json({ mensaje: 'Usuario creado con éxito', id: result.insertId });
   } catch (error) {
     res.status(500).json({ error: 'Error al guardar el usuario.' });
@@ -185,12 +230,12 @@ app.post('/api/usuarios', async (req, res) => {
 
 app.put('/api/usuarios/:id', async (req, res) => {
   const { id } = req.params;
-  const { nombre, email, password, region, comuna, esadmin } = req.body;
+  const { nombre, email, password, region, comuna, telefono, esadmin } = req.body;
   try {
     if (password) {
-      await db.query('UPDATE usuarios SET nombre=?, email=?, password=?, region=?, comuna=?, esadmin=? WHERE id=?', [nombre, email, password, region, comuna, esadmin, id]);
+      await db.query('UPDATE usuarios SET nombre=?, email=?, password=?, region=?, comuna=?, telefono=?, esadmin=? WHERE id=?', [nombre, email, password, region, comuna, telefono, esadmin, id]);
     } else {
-      await db.query('UPDATE usuarios SET nombre=?, email=?, region=?, comuna=?, esadmin=? WHERE id=?', [nombre, email, region, comuna, esadmin, id]);
+      await db.query('UPDATE usuarios SET nombre=?, email=?, region=?, comuna=?, telefono=?, esadmin=? WHERE id=?', [nombre, email, region, comuna, telefono, esadmin, id]);
     }
     res.json({ mensaje: 'Usuario actualizado correctamente' });
   } catch (error) {
@@ -208,10 +253,9 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 });
 
 // =============================================================
-// 4. ENDPOINTS DEL CARRITO DE COMPRAS
+// 5. ENDPOINTS DEL CARRITO DE COMPRAS
 // =============================================================
 
-// Obtener Carrito (Soporta /api/carrito?usuario_id=X y /api/carrito/:usuario_id)
 const obtenerCarrito = async (req, res) => {
   const usuario_id = req.params.usuario_id || req.query.usuario_id;
 
@@ -337,10 +381,9 @@ app.delete('/api/carrito/vaciar', vaciarCarrito);
 app.delete('/api/carrito/vaciar/:usuario_id', vaciarCarrito);
 
 // =============================================================
-// 5. PROCESAR COMPRAS Y REGISTRO DE ÓRDENES (HISTORIAL DE COMPRAS)
+// 6. PROCESAR COMPRAS Y REGISTRO DE ÓRDENES
 // =============================================================
 
-// Procesar Pago y Guardar la Orden asociada al Usuario
 app.post('/api/ordenes', async (req, res) => {
   const { usuario_id, total, items } = req.body;
 
@@ -351,7 +394,6 @@ app.post('/api/ordenes', async (req, res) => {
   try {
     let productosAComprar = items;
 
-    // Si no se pasaron items en el body, se buscan los del carrito guardado en MySQL
     if (!productosAComprar || productosAComprar.length === 0) {
       const [cartDb] = await db.query(
         `SELECT c.producto_id, c.cantidad, p.precio 
@@ -372,17 +414,14 @@ app.post('/api/ordenes', async (req, res) => {
       return res.status(400).json({ error: 'El carrito está vacío, no se puede procesar el pago.' });
     }
 
-    // Calcular el monto total si no viene especificado
     const montoTotal = total || productosAComprar.reduce((acc, p) => acc + (Number(p.precio_unitario || p.precio) * Number(p.cantidad)), 0);
 
-    // 1. Insertar el encabezado de la orden ligada al usuario
     const [resultOrden] = await db.query(
       'INSERT INTO ordenes (usuario_id, total, fecha, estado) VALUES (?, ?, NOW(), "Pendiente")',
       [usuario_id, montoTotal]
     );
     const ordenId = resultOrden.insertId;
 
-    // 2. Insertar cada producto comprado en detalle_ordenes
     for (const prod of productosAComprar) {
       const productoId = prod.producto_id || prod.id;
       const cantidad = prod.cantidad || 1;
@@ -394,7 +433,6 @@ app.post('/api/ordenes', async (req, res) => {
       );
     }
 
-    // 3. Vaciar el carrito en la base de datos para este usuario
     await db.query('DELETE FROM carrito WHERE usuario_id = ?', [usuario_id]);
 
     res.status(201).json({
@@ -408,10 +446,9 @@ app.post('/api/ordenes', async (req, res) => {
 });
 
 // =============================================================
-// 6. PANEL DE ADMINISTRACIÓN - GESTIÓN DE ÓRDENES
+// 7. PANEL DE ADMINISTRACIÓN - GESTIÓN DE ÓRDENES
 // =============================================================
 
-// Obtener todas las órdenes de la tienda para la tabla del administrador
 app.get('/api/admin/ordenes', async (req, res) => {
   try {
     const query = `
@@ -437,7 +474,6 @@ app.get('/api/admin/ordenes', async (req, res) => {
   }
 });
 
-// Obtener los productos específicos comprados en una orden (Para el Modal "Ver Detalles")
 app.get('/api/ordenes/:orden_id/detalle', async (req, res) => {
   const { orden_id } = req.params;
   try {
@@ -462,7 +498,6 @@ app.get('/api/ordenes/:orden_id/detalle', async (req, res) => {
   }
 });
 
-// Cambiar el estado de envío de una orden (Ej: Pendiente -> En Camino -> Entregado)
 app.put('/api/admin/ordenes/:id/estado', async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
@@ -480,12 +515,10 @@ app.put('/api/admin/ordenes/:id/estado', async (req, res) => {
   }
 });
 
-
 // =============================================================
-// 7. HISTORIAL DEL CLIENTE (VISTA DE USUARIO NORMAL)
+// 8. HISTORIAL DEL CLIENTE
 // =============================================================
 
-// Obtener las compras de un usuario específico para su vista de "Mi Perfil"
 app.get('/api/ordenes/usuario/:usuario_id', async (req, res) => {
   const { usuario_id } = req.params;
   try {
@@ -503,12 +536,10 @@ app.get('/api/ordenes/usuario/:usuario_id', async (req, res) => {
   }
 });
 
-
 // =============================================================
-// 8. PANEL DE ADMINISTRACIÓN - CRUD DE PRODUCTOS E INVENTARIO
+// 9. PANEL DE ADMINISTRACIÓN - CRUD DE PRODUCTOS E INVENTARIO
 // =============================================================
 
-// Leer: Obtener todos los productos para la tabla del administrador (Incluye nombre de categoría)
 app.get('/api/admin/productos', async (req, res) => {
   try {
     const query = `
@@ -524,7 +555,6 @@ app.get('/api/admin/productos', async (req, res) => {
   }
 });
 
-// Crear: Registrar un nuevo producto en la base de datos
 app.post('/api/productos', async (req, res) => {
   const { codigo, nombre, id_categoria, precio, stock, descripcion, imagen } = req.body;
   const sql = 'INSERT INTO productos (codigo, nombre, id_categoria, precio, stock, descripcion, imagen) VALUES (?, ?, ?, ?, ?, ?, ?)';
@@ -536,7 +566,6 @@ app.post('/api/productos', async (req, res) => {
   }
 });
 
-// Actualizar: Editar la información de un producto existente
 app.put('/api/productos/:id', async (req, res) => {
   const { id } = req.params;
   const { codigo, nombre, id_categoria, precio, stock, descripcion, imagen } = req.body;
@@ -549,7 +578,6 @@ app.put('/api/productos/:id', async (req, res) => {
   }
 });
 
-// Eliminar: Borrar un producto de forma permanente
 app.delete('/api/productos/:id', async (req, res) => {
   try {
     await db.query('DELETE FROM productos WHERE id = ?', [req.params.id]);
@@ -559,59 +587,7 @@ app.delete('/api/productos/:id', async (req, res) => {
   }
 });
 
-
-// =============================================================
-// 9. PANEL DE ADMINISTRACIÓN - CRUD DE CATEGORÍAS
-// =============================================================
-
-// Leer: Obtener lista de categorías para el formulario de Productos y la tabla
-app.get('/api/categorias', async (req, res) => {
-  try {
-    const [results] = await db.query('SELECT * FROM categorias');
-    res.json(results);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al consultar categorías.' });
-  }
-});
-
-// Crear: Agregar una nueva categoría (Ej: "Vegano")
-app.post('/api/categorias', async (req, res) => {
-  const { nombre_categoria } = req.body;
-  try {
-    const [result] = await db.query('INSERT INTO categorias (nombre_categoria) VALUES (?)', [nombre_categoria]);
-    res.status(201).json({ mensaje: 'Categoría creada con éxito', id: result.insertId });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al crear la categoría.' });
-  }
-});
-
-// Actualizar: Editar el nombre de una categoría
-app.put('/api/categorias/:id', async (req, res) => {
-  const { id } = req.params;
-  const { nombre_categoria } = req.body;
-  try {
-    await db.query('UPDATE categorias SET nombre_categoria = ? WHERE id_categoria = ?', [nombre_categoria, id]);
-    res.json({ mensaje: 'Categoría actualizada correctamente' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar la categoría.' });
-  }
-});
-
-// Eliminar: Borrar una categoría (Valida que no tenga productos asociados)
-app.delete('/api/categorias/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    await db.query('DELETE FROM categorias WHERE id_categoria = ?', [id]);
-    res.json({ mensaje: 'Categoría eliminada correctamente' });
-  } catch (error) {
-    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-      return res.status(400).json({ error: 'No se puede eliminar. Hay productos que usan esta categoría.' });
-    }
-    res.status(500).json({ error: 'Error al eliminar la categoría.' });
-  }
-});
-
-// Iniciar Servidor
+// Iniciar Servidor en Puerto 5000
 app.listen(5000, () => {
   console.log('🚀 Servidor Backend corriendo en http://localhost:5000');
 });

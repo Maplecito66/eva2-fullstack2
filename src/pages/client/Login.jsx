@@ -1,115 +1,114 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Login() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
 
-  const [errorMsg, setErrorMsg] = useState('');
-  const [isError, setIsError] = useState(false);
+  const { iniciarSesion } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    setErrorMsg('');
-    setIsError(false);
-
-    const emailIngresado = email.trim().toLowerCase();
-
-    if (!emailIngresado || !password) {
-      setIsError(true);
-      setErrorMsg('Por favor ingrese su correo y contraseña.');
-      return;
-    }
+    setError('');
+    setCargando(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const res = await fetch('http://localhost:5000/api/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: emailIngresado,
-          password: password
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (response.ok) {
-        // 1. Guardar usuario activo en localStorage
-        localStorage.setItem('usuarioActivo', JSON.stringify(data.usuario));
+      if (res.ok) {
+        iniciarSesion(data.usuario);
 
-        // 2. Notificar al Navbar/Header que la sesión cambió
-        window.dispatchEvent(new Event('authChange'));
+        const esAdmin = Boolean(
+          data.usuario.esadmin === 1 || 
+          data.usuario.esadmin === true || 
+          data.usuario.esAdmin === 1 ||
+          data.usuario.esAdmin === true
+        );
 
-        // 3. Redirección según rol
-        if (data.usuario.esAdmin) {
-          navigate('/admin'); // Redirige a pages/admin.jsx
+        if (esAdmin) {
+          navigate('/admin');
         } else {
-          navigate('/'); // Redirige a inicio.jsx
+          navigate('/');
         }
       } else {
-        setIsError(true);
-        setErrorMsg(data.error || 'Correo o contraseña incorrectos.');
+        setError(data.error || 'Correo o contraseña incorrectos.');
       }
-    } catch (error) {
-      console.error('Error de conexión:', error);
-      setIsError(true);
-      setErrorMsg('No se pudo conectar con el servidor backend.');
+    } catch (err) {
+      console.error('Error al iniciar sesión:', err);
+      setError('No se pudo conectar con el servidor.');
+    } finally {
+      setCargando(false);
     }
   };
 
   return (
-    <div className="container">
-      <main className="main-content">
-        <div className="form-card">
-          <h2>Iniciar Sesión</h2>
+    <div className="login-wrapper">
+      <div className="login-card-split">
+        {/* Columna Izquierda: Imagen Gastronómica Ancha */}
+        <div className="login-image-side">
+          <img 
+            src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" 
+            alt="Gastronomía Sabor & Aroma" 
+          />
+          <div className="login-image-overlay">
+            <h3>¡Bienvenido a Sabor & Aroma!</h3>
+            <p>Accede para disfrutar de promociones exclusivas y gestionar tus pedidos.</p>
+          </div>
+        </div>
 
-          {errorMsg && (
-            <div className="alert-error">
-              {errorMsg}
-            </div>
-          )}
+        {/* Columna Derecha: Formulario de Login */}
+        <div className="login-form-side">
+          <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>
+            Iniciar Sesión
+          </h2>
 
-          <form onSubmit={handleSubmit} noValidate>
+          {error && <div className="alert-error">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email-login">Correo Electrónico</label>
+              <label htmlFor="email">Correo Electrónico</label>
               <input
                 type="email"
-                id="email-login"
-                className={isError ? 'input-error' : ''}
+                id="email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (isError) setIsError(false);
-                }}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ejemplo@correo.com"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="pass-login">Contraseña</label>
+              <label htmlFor="password">Contraseña</label>
               <input
                 type="password"
-                id="pass-login"
-                className={isError ? 'input-error' : ''}
+                id="password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (isError) setIsError(false);
-                }}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
                 required
               />
             </div>
 
-            <button type="submit" className="btn-primary form-btn">
-              Entrar
+            <button type="submit" className="btn-primary form-btn" disabled={cargando}>
+              {cargando ? 'Ingresando...' : 'Iniciar Sesión'}
             </button>
           </form>
+
+            <p className="form-footer-text">
+            ¿No tienes una cuenta? <Link to="/registro" className="link-bold-primary">Regístrate aquí</Link>
+            </p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

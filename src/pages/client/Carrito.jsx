@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Carrito() {
   const {
-    cartItems,
+    itemsCarrito,
     cargandoCarrito,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
-    getSubtotal,
-    getTotalPrice,
+    actualizarCantidad,
+    eliminarDelCarrito,
+    limpiarCarrito,
+    obtenerSubtotal,
+    obtenerPrecioTotal,
     aplicarCupon,
     descuentoPorcentaje
   } = useCart();
 
   const { usuario } = useAuth();
+  const navigate = useNavigate();
   const [codigoCupon, setCodigoCupon] = useState('');
   const [mensaje, setMensaje] = useState('');
 
@@ -33,19 +34,27 @@ export default function Carrito() {
     setMensaje(res.mensaje);
   };
 
-  const handlePagar = () => {
-    if (cartItems.length === 0) {
+  const handleIrAComprar = () => {
+    if (itemsCarrito.length === 0) {
       alert('El carrito está vacío.');
       return;
     }
-    alert(`¡Gracias por tu compra${usuario ? ', ' + usuario.nombre : ''}!`);
-    clearCart();
+
+    const idUsuario = usuario?.id || usuario?.id_usuario || usuario?.usuario_id;
+
+    if (!idUsuario) {
+      alert('Debes iniciar sesión para completar tu compra.');
+      navigate('/login');
+      return;
+    }
+
+    navigate('/comprar');
   };
 
   if (cargandoCarrito) {
     return (
       <div className="container">
-        <main className="main-content" style={{ textAlign: 'center', padding: '4rem 0' }}>
+        <main className="main-content text-center-padding">
           <h2>Cargando tu pedido...</h2>
         </main>
       </div>
@@ -54,20 +63,20 @@ export default function Carrito() {
 
   return (
     <div className="container">
-      <main className="main-content" style={{ width: '100%' }}>
+      <main className="main-content full-width">
         <h2>Mi carrito de compras</h2>
 
         <div className="cart-layout">
           <div className="cart-items" id="cart-items-container">
-            {cartItems.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+            {itemsCarrito.length === 0 ? (
+              <div className="empty-cart-box">
                 <p>Tu carrito está vacío.</p>
-                <Link to="/categorias" className="btn-primary" style={{ display: 'inline-block', marginTop: '1rem' }}>
+                <Link to="/categorias" className="btn-primary">
                   Ir al Menú
                 </Link>
               </div>
             ) : (
-              cartItems.map((prod) => (
+              itemsCarrito.map((prod) => (
                 <div key={prod.id} className="cart-item">
                   <img
                     src={prod.imagen}
@@ -78,32 +87,31 @@ export default function Carrito() {
                     <h3>
                       {prod.nombre}
                       {prod.porcentaje_descuento > 0 && (
-                        <span style={{ fontSize: '0.75rem', background: '#d32f2f', color: '#fff', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px' }}>
+                        <span className="badge-oferta">
                           -{prod.porcentaje_descuento}% OFF
                         </span>
                       )}
                     </h3>
                     <p>{prod.descripcion}</p>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    {/* Precio con descuento o precio normal */}
+                  <div className="cart-item-right">
                     {prod.porcentaje_descuento > 0 && prod.precioOriginal && (
-                      <span style={{ textDecoration: 'line-through', color: '#888', fontSize: '0.85rem', display: 'block' }}>
+                      <span className="precio-tachado">
                         {formatearPrecio(prod.precioOriginal * prod.cantidad)}
                       </span>
                     )}
-                    <span style={{ fontWeight: 'bold', display: 'block', marginBottom: '0.5rem', color: prod.porcentaje_descuento > 0 ? '#d32f2f' : 'inherit' }}>
+                    <span className={prod.porcentaje_descuento > 0 ? 'precio-oferta' : 'precio-normal'}>
                       {formatearPrecio(prod.precio * prod.cantidad)}
                     </span>
 
-                    <div className="cart-item-controls" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'flex-end' }}>
-                      <button type="button" onClick={() => updateQuantity(prod.id, prod.cantidad - 1)}>-</button>
-                      <input type="text" className="qty-input" value={prod.cantidad} readOnly style={{ width: '35px', textAlign: 'center' }} />
-                      <button type="button" onClick={() => updateQuantity(prod.id, prod.cantidad + 1)}>+</button>
+                    <div className="cart-item-controls">
+                      <button type="button" onClick={() => actualizarCantidad(prod.id, prod.cantidad - 1)}>-</button>
+                      <input type="text" className="qty-input" value={prod.cantidad} readOnly />
+                      <button type="button" onClick={() => actualizarCantidad(prod.id, prod.cantidad + 1)}>+</button>
                       <button 
                         type="button" 
-                        onClick={() => removeFromCart(prod.id)}
-                        style={{ marginLeft: '0.5rem', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer' }}
+                        onClick={() => eliminarDelCarrito(prod.id)}
+                        className="btn-delete-item"
                         title="Eliminar producto"
                       >
                         🗑️
@@ -116,30 +124,30 @@ export default function Carrito() {
           </div>
 
           <div className="cart-summary">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <div className="cart-summary-row">
               <span>SUBTOTAL:</span>
-              <span>{formatearPrecio(getSubtotal())}</span>
+              <span>{formatearPrecio(obtenerSubtotal())}</span>
             </div>
 
             {descuentoPorcentaje > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#2e7d32', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              <div className="cupon-aplicado-row">
                 <span>CUPÓN (10%):</span>
-                <span>-{formatearPrecio(getSubtotal() * descuentoPorcentaje)}</span>
+                <span>-{formatearPrecio(obtenerSubtotal() * descuentoPorcentaje)}</span>
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.2rem', fontWeight: 'bold', borderTop: '1px solid #ccc', paddingTop: '0.8rem' }}>
+            <div className="cart-summary-total">
               <span>TOTAL:</span>
               <span className="total-price" id="cart-total">
-                {formatearPrecio(getTotalPrice())}
+                {formatearPrecio(obtenerPrecioTotal())}
               </span>
             </div>
 
-            <div style={{ marginTop: '2rem' }}>
-              <label htmlFor="coupon-code" style={{ display: 'block', fontSize: '0.85rem', color: '#666', marginBottom: '0.4rem' }}>
+            <div className="cupon-container">
+              <label htmlFor="coupon-code" className="cupon-label">
                 Ingrese el cupón de descuento
               </label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="cupon-group">
                 <input
                   type="text"
                   id="coupon-code"
@@ -152,15 +160,32 @@ export default function Carrito() {
                 </button>
               </div>
               {mensaje && (
-                <p style={{ fontSize: '0.85rem', marginTop: '0.4rem', color: descuentoPorcentaje > 0 ? '#2e7d32' : '#d32f2f' }}>
+                <p className={descuentoPorcentaje > 0 ? 'cupon-msg-exito' : 'cupon-msg-error'}>
                   {mensaje}
                 </p>
               )}
             </div>
 
-            <button type="button" className="btn-pay" onClick={handlePagar} style={{ width: '100%', marginTop: '1.5rem' }}>
-              PAGAR
-            </button>
+            {/* BOTONES LIMPIAR Y PAGAR */}
+            <div className="cart-action-buttons-row">
+              <button 
+                type="button" 
+                className="btn-limpiar-carrito" 
+                onClick={limpiarCarrito}
+                disabled={itemsCarrito.length === 0}
+              >
+                Limpiar
+              </button>
+
+              <button 
+                type="button" 
+                className="btn-pay" 
+                onClick={handleIrAComprar} 
+                disabled={itemsCarrito.length === 0}
+              >
+                Pagar
+              </button>
+            </div>
           </div>
         </div>
       </main>

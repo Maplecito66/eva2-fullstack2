@@ -1,46 +1,67 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth debe usarse dentro de AuthProvider');
+    throw new Error('useAuth debe usarse dentro de un AuthProvider');
   }
   return context;
 };
 
 export const AuthProvider = ({ children }) => {
-  const [usuario, setUsuario] = useState(null);
-  const [cargando, setCargando] = useState(true);
-
-  useEffect(() => {
-    const usuarioGuardado = localStorage.getItem('usuarioActivo');
-    if (usuarioGuardado) {
-      try {
-        setUsuario(JSON.parse(usuarioGuardado));
-      } catch (error) {
-        console.error('Error al cargar el usuario:', error);
-        localStorage.removeItem('usuarioActivo');
-      }
+  // Inicialización síncrona desde localStorage para evitar pérdida de sesión al navegar
+  const [usuario, setUsuario] = useState(() => {
+    try {
+      const usuarioGuardado = localStorage.getItem('usuarioActivo');
+      return usuarioGuardado ? JSON.parse(usuarioGuardado) : null;
+    } catch (error) {
+      console.error('Error al recuperar la sesión guardada:', error);
+      localStorage.removeItem('usuarioActivo');
+      return null;
     }
-    setCargando(false);
-  }, []);
+  });
 
-  const login = (userData) => {
-    setUsuario(userData);
-    localStorage.setItem('usuarioActivo', JSON.stringify(userData));
+  // Iniciar sesión (guarda el usuario en el estado y en localStorage)
+  const iniciarSesion = (datosUsuario) => {
+    setUsuario(datosUsuario);
+    localStorage.setItem('usuarioActivo', JSON.stringify(datosUsuario));
   };
 
-  const logout = () => {
+  // Cerrar sesión (limpia el usuario y el estado local)
+  const cerrarSesion = () => {
     setUsuario(null);
     localStorage.removeItem('usuarioActivo');
+    localStorage.removeItem('carritoCompras');
   };
 
-const isAdmin = () => Boolean(usuario?.esadmin === 1 || usuario?.esadmin === true || usuario?.esAdmin === 1);
+  // Verificar si el usuario actual tiene rol de Administrador
+  const esAdministrador = () => {
+    if (!usuario) return false;
+    return Boolean(
+      usuario.esadmin === 1 || 
+      usuario.esadmin === true || 
+      usuario.esAdmin === 1 || 
+      usuario.esAdmin === true
+    );
+  };
+
   return (
-    <AuthContext.Provider value={{ usuario, login, logout, isAdmin, cargando }}>
-      {!cargando && children}
+    <AuthContext.Provider
+      value={{
+        usuario,
+        iniciarSesion,
+        cerrarSesion,
+        esAdministrador,
+
+        // Alias de compatibilidad hacia atrás
+        login: iniciarSesion,
+        logout: cerrarSesion,
+        isAdmin: esAdministrador
+      }}
+    >
+      {children}
     </AuthContext.Provider>
   );
 };

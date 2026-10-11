@@ -1,24 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const regionesYComunas = {
-  "Arica y Parinacota": ["Arica", "Camarones", "Putre", "General Lagos"],
-  "Tarapacá": ["Iquique", "Alto Hospicio", "Pozo Almonte", "Camiña", "Colchane", "Huara", "Pica"],
-  "Antofagasta": ["Antofagasta", "Mejillones", "Sierra Gorda", "Taltal", "Calama", "Ollagüe", "San Pedro de Atacama", "Tocopilla", "María Elena"],
-  "Atacama": ["Copiapó", "Caldera", "Tierra Amarilla", "Chañaral", "Diego de Almagro", "Vallenar", "Alto del Carmen", "Freirina", "Huasco"],
-  "Coquimbo": ["La Serena", "Coquimbo", "Andacollo", "La Higuera", "Paiguano", "Vicuña", "Illapel", "Canela", "Los Vilos", "Salamanca", "Ovalle", "Combarbalá", "Monte Patria", "Punitaqui", "Río Hurtado"],
-  "Valparaíso": ["Valparaíso", "Casablanca", "Concón", "Juan Fernández", "Puchuncaví", "Quintero", "Viña del Mar", "Isla de Pascua", "Los Andes", "Calle Larga", "Rinconada", "San Esteban", "La Ligua", "Cabildo", "Papudo", "Petorca", "Zapallar", "Quillota", "Calera", "Hijuelas", "La Cruz", "Nogales", "San Antonio", "Algarrobo", "El Quisco", "El Tabo", "Santo Domingo", "San Felipe", "Catemu", "Llaillay", "Panquehue", "Putaendo", "Santa María", "Quilpué", "Limache", "Olmué", "Villa Alemana"],
-  "Región Metropolitana de Santiago": ["Cerrillos", "Cerro Navia", "Conchalí", "El Bosque", "Estación Central", "Huechuraba", "Independencia", "La Cisterna", "La Florida", "La Granja", "La Pintana", "La Reina", "Las Condes", "Lo Barnechea", "Lo Espejo", "Lo Prado", "Macul", "Maipú", "Ñuñoa", "Pedro Aguirre Cerda", "Peñalolén", "Providencia", "Pudahuel", "Quilicura", "Quinta Normal", "Recoleta", "Renca", "San Joaquín", "San Miguel", "San Ramón", "Santiago", "Vitacura", "Puente Alto", "Pirque", "San José de Maipo", "Colina", "Lampa", "Tiltil", "San Bernardo", "Buin", "Calera de Tango", "Paine", "Melipilla", "Alhué", "Curacaví", "María Pinto", "San Pedro", "Talagante", "El Monte", "Isla de Maipo", "Padre Hurtado", "Peñaflor"],
-  "O'Higgins": ["Rancagua", "Codegua", "Coinco", "Doñihue", "Graneros", "Las Cabras", "Machalí", "Malloa", "Mostazal", "Olivar", "Peumo", "Pichidegua", "Quinta de Tilcoco", "Rengo", "Requínoa", "San Vicente", "Pichilemu", "La Estrella", "Litueche", "Marchigüe", "Navidad", "Paredones", "San Fernando", "Chépica", "Chimbarongo", "Lolol", "Nancagua", "Palmilla", "Peralillo", "Placilla", "Pumanque", "Santa Cruz"],
-  "Maule": ["Talca", "Constitución", "Curepto", "Empedrado", "Maule", "Pelarco", "Pencahue", "Río Claro", "San Clemente", "San Rafael", "Cauquenes", "Chanco", "Pelluhue", "Curicó", "Hualañé", "Licantén", "Molina", "Rauco", "Romeral", "Sagrada Familia", "Teno", "Vichuquén", "Linares", "Colbún", "Longaví", "Parral", "San Javier", "Villa Alegre", "Yerbas Buenas"],
-  "Ñuble": ["Chillán", "Bulnes", "Cobquecura", "Coelemu", "Coihueco", "Chillán Viejo", "El Carmen", "Ninhue", "Ñiquén", "Pemuco", "Pinto", "Portezuelo", "Quillón", "Quirihue", "Ranquil", "San Carlos", "San Fabián", "San Ignacio", "San Nicolás", "Treguaco", "Yungay"],
-  "Bío Bío": ["Concepción", "Coronel", "Chiguayante", "Florida", "Graneros", "Hualqui", "Lota", "Penco", "San Pedro de la Paz", "Santa Juana", "Talcahuano", "Tomé", "Hualpén", "Lebu", "Arauco", "Cañete", "Contulmo", "Curanilahue", "Los Álamos", "Tirúa", "Los Ángeles", "Antuco", "Cabrero", "Laja", "Mulchén", "Nacimiento", "Negrete", "Quaco", "Quilleco", "San Rosendo", "Santa Bárbara", "Tucapel", "Yumbel", "Alto Biobío"],
-  "Araucanía": ["Temuco", "Carahue", "Cunco", "Curarrehue", "Freire", "Galvarino", "Gorbea", "Lautaro", "Loncoche", "Melipeuco", "Nueva Imperial", "Padre Las Casas", "Perquenco", "Pitrufquén", "Pucón", "Saavedra", "Teodoro Schmidt", "Toltén", "Vilcún", "Villarrica", "Cholchol", "Angol", "Collipulli", "Curacautín", "Ercilla", "Lonquimay", "Los Sauces", "Lumaco", "Purén", "Renaico", "Traiguén", "Victoria"],
-  "Los Ríos": ["Valdivia", "Corral", "Lanco", "Los Lagos", "Máfil", "Mariquina", "Paillaco", "Panguipulli", "La Unión", "Futrono", "Lago Ranco", "Río Bueno"],
-  "Los Lagos": ["Puerto Montt", "Calbuco", "Cochamó", "Fresia", "Frutillar", "Los Muermos", "Llanquihue", "Maullín", "Puerto Varas", "Castro", "Ancud", "Chonchi", "Curaco de Vélez", "Dalcahue", "Puqueldón", "Queilén", "Quellón", "Quemchi", "Quinchao", "Osorno", "Puerto Octay", "Purranque", "Puyehue", "Río Negro", "San Juan de la Costa", "San Pablo", "Chaitén", "Futaleufú", "Hualaihué", "Palena"],
-  "Aysén": ["Coyhaique", "Lago Verde", "Aysén", "Cisnes", "Guaitecas", "Cochrane", "O'Higgins", "Tortel", "Chile Chico", "Río Ibáñez"],
-  "Magallanes": ["Punta Arenas", "Laguna Blanca", "Río Verde", "San Gregorio", "Cabo de Hornos", "Antártica", "Porvenir", "Primavera", "Timaukel", "Natales", "Torres del Paine"]
-};
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 
 const estadoInicial = {
   nombre: '',
@@ -36,11 +17,55 @@ export default function Registro() {
 
   const [formData, setFormData] = useState(estadoInicial);
   const [errors, setErrors] = useState({});
+  const [mensajeToast, setMensajeToast] = useState('');
+  const [errorServidor, setErrorServidor] = useState('');
 
-  const inputStyle = {
-    color: '#1a1a1a',
-    backgroundColor: '#ffffff'
-  };
+  // Estados para regiones y comunas dinámicas desde la BD
+  const [listaRegiones, setListaRegiones] = useState([]);
+  const [listaComunas, setListaComunas] = useState([]);
+  const [cargandoRegiones, setCargandoRegiones] = useState(true);
+
+  // 1. Cargar la lista de regiones desde MySQL al montar el componente
+  useEffect(() => {
+    const cargarRegionesBD = async () => {
+      try {
+        setCargandoRegiones(true);
+        const res = await fetch('http://localhost:5000/api/regiones');
+        if (res.ok) {
+          const data = await res.json();
+          setListaRegiones(data);
+        }
+      } catch (err) {
+        console.error('Error al obtener regiones desde la BD:', err);
+      } finally {
+        setCargandoRegiones(false);
+      }
+    };
+
+    cargarRegionesBD();
+  }, []);
+
+  // 2. Cargar comunas asociadas cada vez que cambie la región seleccionada
+  useEffect(() => {
+    if (!formData.region) {
+      setListaComunas([]);
+      return;
+    }
+
+    const cargarComunasBD = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/comunas?region=${encodeURIComponent(formData.region)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setListaComunas(data);
+        }
+      } catch (err) {
+        console.error('Error al obtener comunas desde la BD:', err);
+      }
+    };
+
+    cargarComunasBD();
+  }, [formData.region]);
 
   const validarCampo = (name, value, currentFormData = formData) => {
     let errorText = '';
@@ -125,6 +150,7 @@ export default function Registro() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorServidor('');
 
     let nuevosErrores = {};
     Object.keys(formData).forEach((campo) => {
@@ -136,12 +162,19 @@ export default function Registro() {
 
     if (Object.keys(nuevosErrores).length > 0) return;
 
+    const emailLimpio = formData.email.trim().toLowerCase();
+    
+    // Asignar rol Administrador si el correo termina en @profesor.duoc.cl
+    const esAdministradorRol = emailLimpio.endsWith('@profesor.duoc.cl') ? 1 : 0;
+
     const nuevoUsuario = {
       nombre: formData.nombre.trim(),
-      email: formData.email.trim().toLowerCase(),
+      email: emailLimpio,
       password: formData.password,
+      telefono: formData.telefono,
       region: formData.region,
-      comuna: formData.comuna
+      comuna: formData.comuna,
+      esadmin: esAdministradorRol
     };
 
     try {
@@ -156,24 +189,48 @@ export default function Registro() {
       const data = await response.json();
 
       if (response.ok) {
-        alert('¡Registro exitoso! Guardado en la base de datos.');
+        const tipoCuenta = esAdministradorRol === 1 ? 'Administrador' : 'Cliente';
+        setMensajeToast(`🎉 ¡Registro exitoso como ${tipoCuenta}! Redirigiendo a Iniciar Sesión...`);
         setFormData(estadoInicial);
         setErrors({});
-        navigate('/login');
+        setTimeout(() => {
+          navigate('/login');
+        }, 2200);
       } else {
-        alert(data.error || 'Ocurrió un error al registrar.');
+        setErrorServidor(data.error || 'Ocurrió un error al registrar.');
       }
     } catch (error) {
       console.error('Error de red:', error);
-      alert('No se pudo conectar con el servidor backend.');
+      setErrorServidor('No se pudo conectar con el servidor backend.');
     }
   };
 
   return (
-    <div className="container">
-      <main className="main-content">
-        <div className="form-card">
-          <h2>Registro de usuario</h2>
+    <div className="login-wrapper">
+      {mensajeToast && <div className="toast-notificacion toast-exito">{mensajeToast}</div>}
+
+      <div className="login-card-split login-card-wide">
+        
+        {/* Columna Izquierda: Imagen Gastronómica */}
+        <div className="login-image-side">
+          <img 
+            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80" 
+            alt="Únete a Sabor & Aroma" 
+          />
+          <div className="login-image-overlay">
+            <h3>¡Únete a Sabor & Aroma!</h3>
+            <p>Crea tu cuenta para realizar pedidos de forma rápida, guardar tu dirección y acceder a promociones exclusivas.</p>
+          </div>
+        </div>
+
+        {/* Columna Derecha: Formulario de Registro */}
+        <div className="login-form-side login-form-side-padded">
+          <h2 className="form-title-centered">
+            Registro de Usuario
+          </h2>
+
+          {errorServidor && <div className="alert-error">{errorServidor}</div>}
+
           <form onSubmit={handleSubmit} noValidate>
             
             {/* NOMBRE COMPLETO */}
@@ -183,13 +240,12 @@ export default function Registro() {
                 type="text"
                 id="nombre"
                 name="nombre"
-                style={inputStyle}
-                className={errors.nombre ? 'error' : ''}
+                className={`form-input-dark ${errors.nombre ? 'input-error' : ''}`}
                 value={formData.nombre}
                 onChange={handleChange}
               />
               {errors.nombre && (
-                <span className="error-message" style={{ display: 'block' }}>
+                <span className="error-message error-message-block">
                   {errors.nombre}
                 </span>
               )}
@@ -203,13 +259,12 @@ export default function Registro() {
                 id="email"
                 name="email"
                 maxLength={110}
-                style={inputStyle}
-                className={errors.email ? 'error' : ''}
+                className={`form-input-dark ${errors.email ? 'input-error' : ''}`}
                 value={formData.email}
                 onChange={handleChange}
               />
               {errors.email && (
-                <span className="error-message" style={{ display: 'block' }}>
+                <span className="error-message error-message-block">
                   {errors.email}
                 </span>
               )}
@@ -223,13 +278,12 @@ export default function Registro() {
                 id="confirmarEmail"
                 name="confirmarEmail"
                 maxLength={110}
-                style={inputStyle}
-                className={errors.confirmarEmail ? 'error' : ''}
+                className={`form-input-dark ${errors.confirmarEmail ? 'input-error' : ''}`}
                 value={formData.confirmarEmail}
                 onChange={handleChange}
               />
               {errors.confirmarEmail && (
-                <span className="error-message" style={{ display: 'block' }}>
+                <span className="error-message error-message-block">
                   {errors.confirmarEmail}
                 </span>
               )}
@@ -243,13 +297,12 @@ export default function Registro() {
                 id="password"
                 name="password"
                 maxLength={10}
-                style={inputStyle}
-                className={errors.password ? 'error' : ''}
+                className={`form-input-dark ${errors.password ? 'input-error' : ''}`}
                 value={formData.password}
                 onChange={handleChange}
               />
               {errors.password && (
-                <span className="error-message" style={{ display: 'block' }}>
+                <span className="error-message error-message-block">
                   {errors.password}
                 </span>
               )}
@@ -263,13 +316,12 @@ export default function Registro() {
                 id="confirmarPassword"
                 name="confirmarPassword"
                 maxLength={10}
-                style={inputStyle}
-                className={errors.confirmarPassword ? 'error' : ''}
+                className={`form-input-dark ${errors.confirmarPassword ? 'input-error' : ''}`}
                 value={formData.confirmarPassword}
                 onChange={handleChange}
               />
               {errors.confirmarPassword && (
-                <span className="error-message" style={{ display: 'block' }}>
+                <span className="error-message error-message-block">
                   {errors.confirmarPassword}
                 </span>
               )}
@@ -282,59 +334,65 @@ export default function Registro() {
                 type="tel"
                 id="telefono"
                 name="telefono"
-                style={inputStyle}
+                className="form-input-dark"
                 value={formData.telefono}
                 onChange={handleChange}
               />
             </div>
 
-            {/* REGIÓN Y COMUNA */}
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-              <div className="form-group" style={{ flex: 1, minWidth: '200px' }}>
+            {/* REGIÓN Y COMUNA DESDE MYSQL */}
+            <div className="form-row-flex">
+              <div className="form-group form-group-flex">
                 <label htmlFor="region">Región</label>
                 <select
                   id="region"
                   name="region"
-                  style={inputStyle}
-                  className={errors.region ? 'error' : ''}
+                  className={`form-input-dark ${errors.region ? 'input-error' : ''}`}
                   value={formData.region}
                   onChange={handleChange}
+                  disabled={cargandoRegiones}
                 >
-                  <option value="" style={{ color: '#1a1a1a' }}>-- Seleccione la región --</option>
-                  {Object.keys(regionesYComunas).map((reg) => (
-                    <option key={reg} value={reg} style={{ color: '#1a1a1a' }}>
-                      {reg}
-                    </option>
-                  ))}
+                  <option value="" className="select-option-dark">
+                    {cargandoRegiones ? 'Cargando regiones...' : '-- Seleccione la región --'}
+                  </option>
+                  {listaRegiones.map((reg) => {
+                    const nombreReg = typeof reg === 'string' ? reg : reg.nombre_region || reg.nombre;
+                    return (
+                      <option key={reg.id_region || nombreReg} value={nombreReg} className="select-option-dark">
+                        {nombreReg}
+                      </option>
+                    );
+                  })}
                 </select>
                 {errors.region && (
-                  <span className="error-message" style={{ display: 'block' }}>
+                  <span className="error-message error-message-block">
                     {errors.region}
                   </span>
                 )}
               </div>
 
-              <div className="form-group" style={{ flex: 1, minWidth: '200px' }}>
+              <div className="form-group form-group-flex">
                 <label htmlFor="comuna">Comuna</label>
                 <select
                   id="comuna"
                   name="comuna"
-                  style={inputStyle}
-                  className={errors.comuna ? 'error' : ''}
+                  className={`form-input-dark ${errors.comuna ? 'input-error' : ''}`}
                   value={formData.comuna}
                   onChange={handleChange}
-                  disabled={!formData.region}
+                  disabled={!formData.region || listaComunas.length === 0}
                 >
-                  <option value="" style={{ color: '#1a1a1a' }}>-- Seleccione la comuna --</option>
-                  {formData.region &&
-                    regionesYComunas[formData.region].map((com) => (
-                      <option key={com} value={com} style={{ color: '#1a1a1a' }}>
-                        {com}
+                  <option value="" className="select-option-dark">-- Seleccione la comuna --</option>
+                  {listaComunas.map((com) => {
+                    const nombreCom = typeof com === 'string' ? com : com.nombre_comuna || com.nombre;
+                    return (
+                      <option key={com.id_comuna || nombreCom} value={nombreCom} className="select-option-dark">
+                        {nombreCom}
                       </option>
-                    ))}
+                    );
+                  })}
                 </select>
                 {errors.comuna && (
-                  <span className="error-message" style={{ display: 'block' }}>
+                  <span className="error-message error-message-block">
                     {errors.comuna}
                   </span>
                 )}
@@ -345,8 +403,13 @@ export default function Registro() {
               Registrarse
             </button>
           </form>
+
+          <p className="form-footer-text">
+            ¿Ya tienes una cuenta? <Link to="/login" className="link-bold-primary">Inicia sesión aquí</Link>
+          </p>
         </div>
-      </main>
+
+      </div>
     </div>
   );
 }

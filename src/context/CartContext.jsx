@@ -13,15 +13,14 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const { usuario } = useAuth();
-  const [cartItems, setCartItems] = useState([]);
+  const [itemsCarrito, setItemsCarrito] = useState([]);
   const [cargandoCarrito, setCargandoCarrito] = useState(false);
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(0);
 
-  const getUserId = useCallback((u) => {
+  const obtenerIdUsuario = useCallback((u) => {
     return u?.id || u?.id_usuario || u?.usuario_id || null;
   }, []);
 
-  // Función helper para calcular el precio final con oferta
   const calcularPrecioFinal = (prod) => {
     const precioBase = Number(prod.precioOriginal || prod.precio || 0);
     const porcentajeDesc = Number(prod.porcentaje_descuento || prod.descuento || 0);
@@ -32,159 +31,147 @@ export const CartProvider = ({ children }) => {
     return precioBase;
   };
 
-  // Cargar productos desde MySQL o LocalStorage
+  // Cargar productos exclusivamente desde MySQL si hay usuario activo
   const cargarCarrito = useCallback(async () => {
+    const userId = obtenerIdUsuario(usuario);
+
+    if (!userId) {
+      setItemsCarrito([]);
+      setCargandoCarrito(false);
+      return;
+    }
+
     setCargandoCarrito(true);
-    const userId = getUserId(usuario);
+    try {
+      const res = await fetch(`http://localhost:5000/api/carrito?usuario_id=${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const itemsFormateados = data.map(item => {
+            const precioBase = Number(item.precio_original || item.precio || 0);
+            const porcentajeDesc = Number(item.porcentaje_descuento || item.descuento || 0);
+            const precioFinal = calcularPrecioFinal({ precio: precioBase, porcentaje_descuento: porcentajeDesc });
 
-    if (userId) {
-      try {
-        const res = await fetch(`http://localhost:5000/api/carrito?usuario_id=${userId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            const itemsFormateados = data.map(item => {
-              const precioBase = Number(item.precio_original || item.precio || 0);
-              const porcentajeDesc = Number(item.porcentaje_descuento || item.descuento || 0);
-              const precioFinal = calcularPrecioFinal({ precio: precioBase, porcentaje_descuento: porcentajeDesc });
-
-              return {
-                id: item.producto_id || item.id,
-                id_carrito: item.id_carrito || item.id,
-                nombre: item.nombre,
-                descripcion: item.descripcion,
-                precioOriginal: precioBase,
-                precio: precioFinal, // Precio con descuento ya aplicado
-                porcentaje_descuento: porcentajeDesc,
-                imagen: item.imagen,
-                cantidad: Number(item.cantidad)
-              };
-            });
-            setCartItems(itemsFormateados);
-            setCargandoCarrito(false);
-            return;
-          }
+            return {
+              id: item.producto_id || item.id,
+              id_carrito: item.id_carrito || item.id,
+              nombre: item.nombre,
+              descripcion: item.descripcion,
+              precioOriginal: precioBase,
+              precio: precioFinal,
+              porcentaje_descuento: porcentajeDesc,
+              imagen: item.imagen,
+              cantidad: Number(item.cantidad)
+            };
+          });
+          setItemsCarrito(itemsFormateados);
         }
-      } catch (err) {
-        console.warn('No se pudo conectar con la BD del carrito, usando respaldo local:', err);
       }
+    } catch (err) {
+      console.error('Error cargando carrito de MySQL:', err);
+      setItemsCarrito([]);
+    } finally {
+      setCargandoCarrito(false);
     }
-
-    const savedCart = localStorage.getItem('carritoCompras');
-    if (savedCart) {
-      try {
-        setCartItems(JSON.parse(savedCart));
-      } catch (err) {
-        setCartItems([]);
-      }
-    } else {
-      setCartItems([]);
-    }
-    setCargandoCarrito(false);
-  }, [usuario, getUserId]);
+  }, [usuario, obtenerIdUsuario]);
 
   useEffect(() => {
     cargarCarrito();
   }, [cargarCarrito]);
 
-  useEffect(() => {
-    localStorage.setItem('carritoCompras', JSON.stringify(cartItems));
-  }, [cartItems]);
+  // Agregar producto (Verifica autenticación previa)
+  const agregarAlCarrito = async (producto) => {
+    const userId = obtenerIdUsuario(usuario);
+    if (!userId) {
+      return { exito: false, requiereLogin: true };
+    }
 
-  // Agregar producto procesando la oferta antes de guardarlo
-  const addToCart = async (product) => {
-    const userId = getUserId(usuario);
-
-    const precioBase = Number(product.precioOriginal || product.precio || 0);
-    const porcentajeDesc = Number(product.porcentaje_descuento || product.descuento || 0);
+    const precioBase = Number(producto.precioOriginal || producto.precio || 0);
+    const porcentajeDesc = Number(producto.porcentaje_descuento || producto.descuento || 0);
     const precioFinal = calcularPrecioFinal({ precio: precioBase, porcentaje_descuento: porcentajeDesc });
 
     const productoConOferta = {
-      ...product,
+      ...producto,
       precioOriginal: precioBase,
-      precio: precioFinal, // Este es el precio efectivamente cobrado
+      precio: precioFinal,
       porcentaje_descuento: porcentajeDesc
     };
 
-    setCartItems(prevItems => {
-      const existing = prevItems.find(item => item.id === product.id);
-      if (existing) {
+    setItemsCarrito(prevItems => {
+      const existe = prevItems.find(item => item.id === producto.id);
+      if (existe) {
         return prevItems.map(item =>
-          item.id === product.id ? { ...item, cantidad: item.cantidad + 1 } : item
+          item.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item
         );
       }
       return [...prevItems, { ...productoConOferta, cantidad: 1 }];
     });
 
-    if (userId) {
-      try {
-        await fetch('http://localhost:5000/api/carrito', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            usuario_id: userId,
-            producto_id: product.id,
-            cantidad: 1,
-            precio_unitario: precioFinal
-          })
-        });
-      } catch (err) {
-        console.error('Error al guardar en BD:', err);
-      }
+    try {
+      await fetch('http://localhost:5000/api/carrito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario_id: userId,
+          producto_id: producto.id,
+          cantidad: 1,
+          precio_unitario: precioFinal
+        })
+      });
+      return { exito: true };
+    } catch (err) {
+      console.error('Error al guardar en BD:', err);
+      return { exito: true };
     }
   };
 
-  const updateQuantity = async (productId, newQuantity) => {
-    if (newQuantity <= 0) {
-      await removeFromCart(productId);
+  const actualizarCantidad = async (productoId, nuevaCantidad) => {
+    const userId = obtenerIdUsuario(usuario);
+    if (!userId) return;
+
+    if (nuevaCantidad <= 0) {
+      await eliminarDelCarrito(productoId);
       return;
     }
 
-    const userId = getUserId(usuario);
-
-    setCartItems(prevItems =>
+    setItemsCarrito(prevItems =>
       prevItems.map(item =>
-        item.id === productId ? { ...item, cantidad: newQuantity } : item
+        item.id === productoId ? { ...item, cantidad: nuevaCantidad } : item
       )
     );
 
-    if (userId) {
-      try {
-        await fetch(`http://localhost:5000/api/carrito/${productId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            usuario_id: userId,
-            cantidad: newQuantity
-          })
-        });
-      } catch (err) {
-        console.error('Error actualizando cantidad en BD:', err);
-      }
+    try {
+      await fetch(`http://localhost:5000/api/carrito/${productoId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario_id: userId,
+          cantidad: nuevaCantidad
+        })
+      });
+    } catch (err) {
+      console.error('Error actualizando cantidad en BD:', err);
     }
   };
 
-  const removeFromCart = async (productId) => {
-    const userId = getUserId(usuario);
+  const eliminarDelCarrito = async (productoId) => {
+    const userId = obtenerIdUsuario(usuario);
+    if (!userId) return;
 
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+    setItemsCarrito(prevItems => prevItems.filter(item => item.id !== productoId));
 
-    if (userId) {
-      try {
-        await fetch(`http://localhost:5000/api/carrito/${productId}?usuario_id=${userId}`, {
-          method: 'DELETE'
-        });
-      } catch (err) {
-        console.error('Error eliminando producto en BD:', err);
-      }
+    try {
+      await fetch(`http://localhost:5000/api/carrito/${productoId}?usuario_id=${userId}`, {
+        method: 'DELETE'
+      });
+    } catch (err) {
+      console.error('Error eliminando producto de BD:', err);
     }
   };
 
-  const clearCart = async () => {
-    const userId = getUserId(usuario);
-
-    setCartItems([]);
-    localStorage.removeItem('carritoCompras');
+  const limpiarCarrito = async () => {
+    const userId = obtenerIdUsuario(usuario);
+    setItemsCarrito([]);
     setDescuentoPorcentaje(0);
 
     if (userId) {
@@ -198,19 +185,20 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + (Number(item.cantidad) || 1), 0);
+  const obtenerTotalItems = () => {
+    if (!usuario) return 0;
+    return itemsCarrito.reduce((total, item) => total + (Number(item.cantidad) || 1), 0);
   };
 
-  const getSubtotal = () => {
-    return cartItems.reduce(
+  const obtenerSubtotal = () => {
+    return itemsCarrito.reduce(
       (total, item) => total + Number(item.precio || 0) * (Number(item.cantidad) || 1),
       0
     );
   };
 
-  const getTotalPrice = () => {
-    const subtotal = getSubtotal();
+  const obtenerPrecioTotal = () => {
+    const subtotal = obtenerSubtotal();
     return Math.round(subtotal * (1 - descuentoPorcentaje));
   };
 
@@ -218,7 +206,7 @@ export const CartProvider = ({ children }) => {
     const cuponLimpio = codigo.trim().toUpperCase();
     if (cuponLimpio === 'SABOR10') {
       setDescuentoPorcentaje(0.10);
-      return { exito: true, mensaje: '¡Cupón global del 10% aplicado correctamente!' };
+      return { exito: true, mensaje: '¡Cupón del 10% aplicado correctamente!' };
     }
     return { exito: false, mensaje: 'Cupón no válido.' };
   };
@@ -226,15 +214,15 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider
       value={{
-        cartItems,
+        itemsCarrito,
         cargandoCarrito,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        getTotalItems,
-        getSubtotal,
-        getTotalPrice,
+        agregarAlCarrito,
+        eliminarDelCarrito,
+        actualizarCantidad,
+        limpiarCarrito,
+        obtenerTotalItems,
+        obtenerSubtotal,
+        obtenerPrecioTotal,
         aplicarCupon,
         descuentoPorcentaje
       }}

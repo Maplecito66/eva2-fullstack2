@@ -997,6 +997,658 @@ img {
     opacity: 1;
   }
 }
+/* =============================================================
+   NUEVOS ESTILOS PARA COMPONENTES (NAVBAR, CARRITO Y CATALOGO)
+   ============================================================= */
+
+/* Header y Navegación */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+}
+
+.site-title {
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+
+.main-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.cart-btn {
+  text-decoration: none;
+  background: #2e7d32;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.user-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.4rem 2rem;
+  background-color: #fafafa;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+  gap: 15px;
+}
+
+.admin-link {
+  color: #d32f2f;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.btn-logout {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.user-link {
+  color: #333;
+  text-decoration: none;
+}
+
+/* Vista Carrito */
+.empty-cart-box {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.cart-item-right {
+  text-align: right;
+}
+
+.badge-oferta {
+  font-size: 0.75rem;
+  background: #d32f2f;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.precio-tachado {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 0.85rem;
+  display: block;
+}
+
+.precio-oferta {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #d32f2f;
+}
+
+.precio-normal {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.cart-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.qty-input {
+  width: 35px;
+  text-align: center;
+}
+
+.btn-delete-item {
+  margin-left: 0.5rem;
+  background: #d32f2f;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+}
+
+.cupon-aplicado-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #2e7d32;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.cupon-container {
+  margin-top: 2rem;
+}
+
+.cupon-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.4rem;
+}
+
+.cupon-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.cupon-msg-exito {
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
+  color: #2e7d32;
+}
+
+.cupon-msg-error {
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
+  color: #d32f2f;
+}
+
+.btn-pay {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.btn-pay:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Secciones generales */
+.full-width {
+  width: 100%;
+}
+
+.text-center-padding {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.margin-bottom-15 {
+  margin-bottom: 1.5rem;
+}
+
+.margin-top-30 {
+  margin-top: 3rem;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+/* Corrección de color de texto blanco para el botón Mi Pedido */
+.navbar a.cart-btn,
+.cart-btn {
+    color: #ffffff !important;
+    background-color: var(--accent-green, #2e7d32);
+}
+
+.navbar a.cart-btn:hover,
+.cart-btn:hover {
+    color: #ffffff !important;
+    background-color: #1b5e20;
+}
+
+/* Ajuste de posición del menú desplegable */
+.mini-menu-dropdown {
+    top: 100% !important;
+    margin-top: 4px !important;
+}
+
+/* Estilo destacado para el porcentaje de descuento en la página de Ofertas */
+.badge-descuento {
+    color: #d32f2f !important;          /* Color rojo destacado */
+    font-size: 1.2rem !important;         /* Texto más grande */
+    font-weight: 800 !important;          /* Letra en negrita gruesa */
+    background-color: #ffebee;            /* Fondo rojo suave estilo etiqueta */
+    border: 1px solid #ffcdd2;            /* Borde sutil rojo */
+    padding: 4px 14px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(211, 47, 47, 0.1);
+}
+
+/* =============================================================
+   ESTILOS PARA LOGIN EN 2 COLUMNAS (IMAGEN IZQ - FORMULARIO DER)
+   ============================================================= */
+
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 2rem 1rem;
+  width: 100%;
+}
+
+.login-card-split {
+  display: flex;
+  width: 100%;
+  max-width: 1100px; /* Más ancho para abarcar más espacio en pantalla */
+  background-color: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0e6df;
+  margin: 0 auto;
+}
+
+/* Columna Izquierda: Imagen más ancha */
+.login-image-side {
+  flex: 1.4;
+  position: relative;
+  background-color: #ffe0b2;
+  min-height: 480px;
+}
+
+.login-image-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.login-image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2.5rem 2rem 2rem 2rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: #ffffff;
+  text-align: left;
+}
+
+.login-image-overlay h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.4rem;
+  font-weight: bold;
+}
+
+.login-image-overlay p {
+  font-size: 0.95rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Columna Derecha: Formulario */
+.login-form-side {
+  flex: 1;
+  padding: 3.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Responsivo para móviles */
+@media (max-width: 850px) {
+  .login-card-split {
+    flex-direction: column;
+  }
+
+  .login-image-side {
+    height: 240px;
+    min-height: 240px;
+  }
+
+  .login-form-side {
+    padding: 2rem 1.5rem;
+  }
+}
+
+/* =============================================================
+   ESTILOS LIMPIOS PARA REGISTRO Y VARIACIONES DE TOAST
+   ============================================================= */
+
+.login-card-wide {
+  max-width: 1150px;
+}
+
+.login-form-side-padded {
+  padding: 2.5rem 2.5rem;
+}
+
+.form-title-centered {
+  text-align: center;
+  margin-bottom: 1.2rem;
+  color: var(--primary-color);
+}
+
+.form-footer-text {
+  text-align: center;
+  margin-top: 1.2rem;
+  font-size: 0.9rem;
+}
+
+.link-bold-primary {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.form-row-flex {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-group-flex {
+  flex: 1;
+  min-width: 180px;
+}
+
+.form-input-dark {
+  color: #1a1a1a;
+  background-color: #ffffff;
+}
+
+.select-option-dark {
+  color: #1a1a1a;
+  background-color: #ffffff;
+}
+
+.error-message-block {
+  display: block;
+}
+
+/* Variaciones de Toasts Flotantes */
+.toast-notificacion.toast-warning {
+  background-color: #e65100;
+}
+
+.toast-notificacion.toast-error {
+  background-color: #d32f2f;
+}
+
+.toast-notificacion.toast-exito {
+  background-color: #2e7d32;
+}
+
+/* =============================================================
+   ESTILOS DE VACIAR CARRITO Y COMPRAR.JSX
+   ============================================================= */
+
+/* Botones alineados en el resumen del carrito */
+.cart-action-buttons-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.btn-limpiar-carrito {
+  flex: 1;
+  background-color: #757575;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-limpiar-carrito:hover {
+  background-color: #616161;
+}
+
+/* Layout del Checkout Comprar.jsx */
+.checkout-container {
+  max-width: 950px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.checkout-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.checkout-main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.badge-total-pagar {
+  background-color: #007bff;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.checkout-subtitle {
+  color: #707070;
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.checkout-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.checkout-section h3 {
+  font-size: 1.25rem;
+  color: #333;
+  margin-bottom: 0.3rem;
+}
+
+.form-row-2 {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-row-3 {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-row-2 .form-group, .form-row-3 .form-group {
+  flex: 1;
+  min-width: 220px;
+}
+
+.input-readonly {
+  background-color: #f5f5f5 !important;
+  color: #424242 !important;
+  border: 1px solid #e0e0e0 !important;
+  cursor: not-allowed;
+}
+
+/* Tabla de productos en Checkout */
+.checkout-table-wrapper {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.checkout-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.checkout-table th {
+  padding: 10px 12px;
+  background-color: #fafafa;
+  border-bottom: 2px solid #eee;
+  color: #555;
+}
+
+.checkout-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.thumb-table {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Botones de pago Verde/Rojo */
+.payment-test-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.payment-btn-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.payment-label-success {
+  color: #2e7d32;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-bottom: 0.4rem;
+}
+
+.payment-label-error {
+  color: #d32f2f;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-bottom: 0.4rem;
+}
+
+.btn-pago-verde {
+  background-color: #198754;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-pago-rojo {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-pago-verde:hover, .btn-pago-rojo:hover {
+  opacity: 0.9;
+}
+
+/* Encabezados de respuesta (Vistas 1 y 2) */
+.checkout-header-success h2 {
+  color: #198754;
+  font-size: 1.5rem;
+}
+
+.checkout-header-error h2 {
+  color: #dc3545;
+  font-size: 1.5rem;
+}
+
+.order-code-badge {
+  font-size: 0.85rem;
+  color: #666;
+  float: right;
+}
+
+.checkout-total-banner {
+  background-color: #fafafa;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-top: 1.5rem;
+}
+
+.checkout-actions-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-boleta-pdf {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-boleta-email {
+  background-color: #198754;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-reintentar-pago {
+  background-color: #198754;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+}
 
 /* --- PANEL DE ADMINISTRADOR --- */
 .admin-layout {

@@ -1,116 +1,108 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
 export default function Navbar() {
-  const { usuario, logout, isAdmin } = useAuth();
-  const { getTotalItems } = useCart();
+  const { usuario, cerrarSesion, esAdministrador } = useAuth();
+  const { obtenerTotalItems } = useCart();
   const navigate = useNavigate();
+
+  const [categorias, setCategorias] = useState([]);
+  const [dropdownAbierto, setDropdownAbierto] = useState(false);
   const dropdownRef = useRef(null);
 
-  const [listaCategorias, setListaCategorias] = useState([]);
-  const [menuCategoriasAbierto, setMenuCategoriasAbierto] = useState(false);
-
-  const obtenerCategoriasBD = async () => {
+  // Consultar categorías a la base de datos
+  const cargarCategorias = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/categorias');
       if (res.ok) {
         const data = await res.json();
-        setListaCategorias(data);
+        setCategorias(data);
       }
     } catch (err) {
-      console.error('Error al cargar categorías desde MySQL:', err);
+      console.error('Error al consultar categorías en el Navbar:', err);
     }
   };
 
   useEffect(() => {
-    obtenerCategoriasBD();
+    cargarCategorias();
 
-    const manejarCambioCategoria = () => obtenerCategoriasBD();
-    window.addEventListener('categoryChange', manejarCambioCategoria);
+    const manejarCambioCategorias = () => cargarCategorias();
+    window.addEventListener('categoryChange', manejarCambioCategorias);
 
+    // Cierra el menú desplegable cuando se hace clic fuera del elemento
     const manejarClicFuera = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setMenuCategoriasAbierto(false);
+        setDropdownAbierto(false);
       }
     };
     document.addEventListener('mousedown', manejarClicFuera);
 
     return () => {
-      window.removeEventListener('categoryChange', manejarCambioCategoria);
+      window.removeEventListener('categoryChange', manejarCambioCategorias);
       document.removeEventListener('mousedown', manejarClicFuera);
     };
   }, []);
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    cerrarSesion();
+    navigate('/');
   };
 
-  const irACategoria = (nombreCat) => {
-    setMenuCategoriasAbierto(false);
-    if (nombreCat === 'todas') {
-      navigate('/categorias');
-    } else {
+  const handleSeleccionarCategoria = (nombreCat) => {
+    setDropdownAbierto(false);
+    if (nombreCat) {
       navigate(`/categorias?cat=${encodeURIComponent(nombreCat)}`);
+    } else {
+      navigate('/categorias');
     }
   };
 
+  const toggleDropdown = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDropdownAbierto((prev) => !prev);
+  };
+
   return (
-    <header className="header-container">
-      <div className="main-header">
-        <Link to="/" className="logo text-decoration-none">
-          <span className="logo-icon">🍔</span>
-          <h1>Sabor & Aroma</h1>
-        </Link>
+    <>
+      <header className="main-header">
+        <div className="logo">
+            <span className="logo-icon">🍔</span>
+            <h1>Sabor & Aroma</h1>
+        </div>
 
         <nav className="navbar">
           <ul>
-            <li>
-              <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>
-                Inicio
-              </NavLink>
-            </li>
-
+            <li><Link to="/">Inicio</Link></li>
             <li className="separator">|</li>
 
+            {/* Menú Desplegable con Clic Fijo en la Flecha */}
             <li className="dropdown-categorias-container" ref={dropdownRef}>
-              <NavLink 
-                to="/categorias" 
-                className={({ isActive }) => `nav-link-categorias ${isActive ? 'active' : ''}`}
-                onClick={() => setMenuCategoriasAbierto(false)}
-              >
+              <Link to="/categorias" className="nav-link-categorias">
                 Categorías
-              </NavLink>
-
+              </Link>
               <button 
                 type="button" 
                 className="btn-flecha-dropdown"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuCategoriasAbierto(!menuCategoriasAbierto);
-                }}
+                onClick={toggleDropdown}
                 title="Desplegar categorías"
               >
                 ▼
               </button>
 
-              {menuCategoriasAbierto && (
+              {dropdownAbierto && (
                 <ul className="mini-menu-dropdown">
                   <li>
-                    <button type="button" onClick={() => irACategoria('todas')}>
+                    <button type="button" onClick={() => handleSeleccionarCategoria('')}>
                       🍽️ Todas las Categorías
                     </button>
                   </li>
-                  {listaCategorias.map((cat) => (
+                  {categorias.map((cat) => (
                     <li key={cat.id_categoria}>
-                      <button type="button" onClick={() => irACategoria(cat.nombre_categoria)}>
-                        {cat.nombre_categoria === 'pizzas-hamburguesas' && '🍕 '}
-                        {cat.nombre_categoria === 'saludable' && '🥗 '}
-                        {cat.nombre_categoria === 'postres' && '🍰 '}
-                        {cat.nombre_categoria === 'bebidas' && '🥤 '}
-                        {cat.nombre_categoria.replace('-', ' ').toUpperCase()}
+                      <button type="button" onClick={() => handleSeleccionarCategoria(cat.nombre_categoria)}>
+                        {cat.nombre_categoria}
                       </button>
                     </li>
                   ))}
@@ -119,55 +111,36 @@ export default function Navbar() {
             </li>
 
             <li className="separator">|</li>
-            <li>
-              <NavLink to="/nosotros" className={({ isActive }) => (isActive ? 'active' : '')}>
-                Nosotros
-              </NavLink>
-            </li>
+            <li><Link to="/ofertas">Ofertas</Link></li>
             <li className="separator">|</li>
-            <li>
-              <NavLink to="/blog" className={({ isActive }) => (isActive ? 'active' : '')}>
-                Blog Culinario
-              </NavLink>
-            </li>
+            <li><Link to="/nosotros">Nosotros</Link></li>
             <li className="separator">|</li>
+            <li><Link to="/blog">Blog Culinario</Link></li>
+            <li className="separator">|</li>
+            <li><Link to="/contacto">Contacto</Link></li>
+
             <li>
-              <NavLink to="/contacto" className={({ isActive }) => (isActive ? 'active' : '')}>
-                Contacto
-              </NavLink>
+              <Link to="/carrito" className="cart-btn">
+                🛒 Mi Pedido ({obtenerTotalItems()})
+              </Link>
             </li>
           </ul>
         </nav>
-
-        <Link to="/carrito" className="cart-btn">
-          🛒 Mi Pedido ({getTotalItems()})
-        </Link>
-      </div>
+      </header>
 
       <div className="user-subbar">
         <div className="user-links">
           {usuario ? (
             <>
-              <span className="user-welcome">
-                Hola, <strong>{usuario.nombre}</strong>
-              </span>
-
-              {isAdmin() && (
+              <span className="user-welcome">Hola, <strong>{usuario.nombre}</strong></span>
+              <span className="separator">|</span>
+              {esAdministrador() && (
                 <>
+                  <Link to="/admin" className="admin-link">⚙️ Panel Administrador</Link>
                   <span className="separator">|</span>
-                  <Link to="/admin" className="admin-link">
-                    Panel Admin
-                  </Link>
                 </>
               )}
-
-              <span className="separator">|</span>
-              <button 
-                type="button"
-                onClick={handleLogout} 
-                className="btn-logout-link" 
-                style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
-              >
+              <button type="button" onClick={handleLogout} className="btn-logout-link">
                 Cerrar sesión
               </button>
             </>
@@ -180,6 +153,6 @@ export default function Navbar() {
           )}
         </div>
       </div>
-    </header>
+    </>
   );
 }

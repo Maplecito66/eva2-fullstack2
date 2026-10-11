@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
-// Importar el hook del Contexto para usarlo en el Guardián
 import { useAuth } from './context/AuthContext';
 
 // Componentes
@@ -18,6 +17,8 @@ import Login from './pages/client/Login';
 import Registro from './pages/client/Registro';
 import Nosotros from './pages/client/Nosotros';
 import Contacto from './pages/client/Contacto';
+import Ofertas from './pages/client/Ofertas';
+import Comprar from './pages/client/Comprar';
 
 // Páginas y Layout de Administrador
 import Dashboard from './pages/admin/Dashboard';
@@ -32,9 +33,9 @@ import PerfilAdmin from './pages/admin/PerfilAdmin';
 
 // MINI GUARDIÁN PROFESIONAL
 const RutaAdministrador = ({ children }) => {
-  const { usuario, isAdmin } = useAuth(); // Ahora usa el Contexto global
+  const { usuario, isAdmin } = useAuth(); // Usa el Contexto global
 
-  // Si no hay usuario o la función isAdmin() da falso, patada al inicio
+  // Si no hay usuario o la función isAdmin() da falso, redirecciona al inicio
   if (!usuario || !isAdmin()) {
     return <Navigate to="/" replace />;
   }
@@ -48,15 +49,13 @@ export default function App() {
         {/* RUTAS PÚBLICAS */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Inicio />} />
-          
-          {/* Rutas unificadas a Categorias.jsx */}
           <Route path="categorias" element={<Categorias />} />
-          <Route path="menu" element={<Categorias />} />
-          
+          <Route path="ofertas" element={<Ofertas />} />
           <Route path="nosotros" element={<Nosotros />} />
           <Route path="blog" element={<Blogs />} />
           <Route path="contacto" element={<Contacto />} />
           <Route path="carrito" element={<Carrito />} />
+          <Route path="comprar" element={<Comprar />} /> {/* <-- RUTA AGREGADA AQUÍ */}
           <Route path="login" element={<Login />} />
           <Route path="registro" element={<Registro />} />
         </Route>
