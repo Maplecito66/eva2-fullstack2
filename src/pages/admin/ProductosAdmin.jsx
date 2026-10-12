@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function ProductosAdmin() {
   const [productos, setProductos] = useState([]);
-  const [categoriasLista, setCategoriasLista] = useState([]); // NUEVO: Para guardar las categorías de la BD
+  const [categoriasLista, setCategoriasLista] = useState([]);
   const [formData, setFormData] = useState({
-    codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: ''
+    codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: '', imagen: ''
   });
   const [editandoId, setEditandoId] = useState(null);
   const [filtroActivo, setFiltroActivo] = useState('todos');
 
-  // Estado para el Toast de notificaciones (Errores y Éxitos)
+  // Referencia para controlar y limpiar el input de archivo
+  const fileInputRef = useRef(null);
+
+  // Estado para el Toast de notificaciones
   const [toast, setToast] = useState({ mostrar: false, mensaje: '', tipo: 'success' });
   
   // Estado para controlar el Modal de confirmación de eliminación
@@ -56,8 +59,9 @@ export default function ProductosAdmin() {
 
       if (response.ok) {
         obtenerDatos();
-        setFormData({ codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: '' }); 
+        setFormData({ codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: '', imagen: '' }); 
         setEditandoId(null);
+        if (fileInputRef.current) fileInputRef.current.value = ""; // Limpia el input de archivo visualmente
         mostrarMensaje(`✅ ¡"${formData.nombre}" guardado con éxito!`);
       } else {
         const data = await response.json();
@@ -75,9 +79,11 @@ export default function ProductosAdmin() {
       id_categoria: producto.id_categoria,
       precio: producto.precio,
       stock: producto.stock,
-      descripcion: producto.descripcion
+      descripcion: producto.descripcion,
+      imagen: producto.imagen || '' // Carga la imagen actual
     });
     setEditandoId(producto.id);
+    if (fileInputRef.current) fileInputRef.current.value = ""; // Limpia cualquier archivo anterior seleccionado
   };
 
   const confirmarEliminacion = async () => {
@@ -159,7 +165,6 @@ export default function ProductosAdmin() {
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Categoría</label>
-                  {/* SELECT DINÁMICO QUE LEE DE LA BASE DE DATOS */}
                   <select className="form-select" name="id_categoria" value={formData.id_categoria} onChange={handleChange} required>
                     <option value="">Seleccione una categoría...</option>
                     {categoriasLista.map(cat => (
@@ -183,12 +188,49 @@ export default function ProductosAdmin() {
                   <label className="form-label">Descripción</label>
                   <textarea className="form-control" name="descripcion" value={formData.descripcion} onChange={handleChange} rows="2"></textarea>
                 </div>
+                
+                {/* ZONA DE IMAGEN ACTUALIZADA */}
+                <div className="mb-3">
+                  <label className="form-label">Imagen del Producto</label>
+                  
+                  {editandoId && formData.imagen && (
+                    <div className="mb-2 text-primary small">
+                      Imagen actual: <strong>{formData.imagen}</strong>
+                    </div>
+                  )}
+                  
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const nombreArchivo = e.target.files[0].name;
+                        setFormData({ 
+                          ...formData, 
+                          imagen: `img/${nombreArchivo}` 
+                        });
+                      }
+                    }}
+                  />
+                  <small className="text-muted">
+                    {editandoId 
+                      ? "Selecciona un nuevo archivo solo si deseas cambiar la foto actual." 
+                      : "Seleccione la imagen del producto para el catálogo."}
+                  </small>
+                </div>
+
                 <div className="d-grid gap-2">
                   <button type="submit" className={`btn ${editandoId ? 'btn-warning' : 'btn-success'}`}>
                     {editandoId ? 'Actualizar Producto' : 'Guardar Producto'}
                   </button>
                   {editandoId && (
-                    <button type="button" className="btn btn-secondary" onClick={() => { setEditandoId(null); setFormData({ codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: '' }); }}>
+                    <button type="button" className="btn btn-secondary" onClick={() => { 
+                      setEditandoId(null); 
+                      setFormData({ codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: '', imagen: '' }); 
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}>
                       Cancelar Edición
                     </button>
                   )}
@@ -234,7 +276,6 @@ export default function ProductosAdmin() {
                       </tr>
                     ) : (
                       productosFiltrados.map((producto) => {
-                        // Encontrar el nombre de la categoría para mostrarlo bonito en la tabla
                         const catObj = categoriasLista.find(c => c.id_categoria === producto.id_categoria);
                         const nombreCat = catObj ? catObj.nombre_categoria : producto.id_categoria;
 

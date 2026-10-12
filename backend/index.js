@@ -52,6 +52,7 @@ app.get('/api/comunas', async (req, res) => {
 // 2. ENDPOINTS DE CATEGORÍAS
 // =============================================================
 
+// Leer categorías
 app.get('/api/categorias', async (req, res) => {
   try {
     const [results] = await db.query('SELECT * FROM categorias ORDER BY id_categoria ASC');
@@ -59,6 +60,66 @@ app.get('/api/categorias', async (req, res) => {
   } catch (error) {
     console.error('Error al consultar categorías:', error);
     res.status(500).json({ error: 'Error al consultar las categorías.' });
+  }
+});
+
+// Crear nueva categoría
+app.post('/api/categorias', async (req, res) => {
+  const { nombre_categoria } = req.body;
+  try {
+    const [result] = await db.query('INSERT INTO categorias (nombre_categoria) VALUES (?)', [nombre_categoria]);
+    
+    // --- MAGIA DEL HISTORIAL ---
+    await db.query(
+      'INSERT INTO reportes (tipo_reporte, especialidad, descripcion) VALUES (?, ?, ?)',
+      ['Categoría', 'Nuevo', `Se creó la categoría: ${nombre_categoria}`]
+    );
+    // ---------------------------
+
+    res.status(201).json({ mensaje: 'Categoría creada con éxito', id: result.insertId });
+  } catch (error) {
+    console.error('Error POST categoría:', error);
+    res.status(500).json({ error: 'Error al guardar la categoría.' });
+  }
+});
+
+// Editar categoría
+app.put('/api/categorias/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre_categoria } = req.body;
+  try {
+    await db.query('UPDATE categorias SET nombre_categoria = ? WHERE id_categoria = ?', [nombre_categoria, id]);
+    
+    // --- MAGIA DEL HISTORIAL ---
+    await db.query(
+      'INSERT INTO reportes (tipo_reporte, especialidad, descripcion) VALUES (?, ?, ?)',
+      ['Categoría', 'Editar', `Se editó la categoría ID ${id} a: ${nombre_categoria}`]
+    );
+    // ---------------------------
+
+    res.json({ mensaje: 'Categoría actualizada correctamente' });
+  } catch (error) {
+    console.error('Error PUT categoría:', error);
+    res.status(500).json({ error: 'Error al actualizar la categoría.' });
+  }
+});
+
+// Eliminar categoría
+app.delete('/api/categorias/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM categorias WHERE id_categoria = ?', [req.params.id]);
+
+    // --- MAGIA DEL HISTORIAL ---
+    await db.query(
+      'INSERT INTO reportes (tipo_reporte, especialidad, descripcion) VALUES (?, ?, ?)',
+      ['Categoría', 'Eliminar', `Se eliminó la categoría con ID: ${req.params.id}`]
+    );
+    // ---------------------------
+
+    res.json({ mensaje: 'Categoría eliminada correctamente' });
+  } catch (error) {
+    console.error('Error DELETE categoría:', error);
+    res.status(500).json({ error: 'Error al eliminar la categoría.' });
   }
 });
 
@@ -516,28 +577,47 @@ app.put('/api/admin/ordenes/:id/estado', async (req, res) => {
 });
 
 // =============================================================
-// 8. HISTORIAL DEL CLIENTE
+//  8. GESTIÓN DE USUARIOS (Con historial automático)
 // =============================================================
-
-app.get('/api/ordenes/usuario/:usuario_id', async (req, res) => {
-  const { usuario_id } = req.params;
+app.post('/api/usuarios', async (req, res) => {
+  const { nombre, email, password, region, comuna, telefono, esadmin } = req.body;
+  const sql = 'INSERT INTO usuarios (nombre, email, password, region, comuna, telefono, esadmin) VALUES (?, ?, ?, ?, ?, ?, ?)';
   try {
-    const query = `
-      SELECT id, total, fecha, estado 
-      FROM ordenes 
-      WHERE usuario_id = ? 
-      ORDER BY fecha DESC
-    `;
-    const [results] = await db.query(query, [usuario_id]);
-    res.json(results);
+    const [result] = await db.query(sql, [nombre, email, password, region, comuna, telefono || null, esadmin || 0]);
+    
+    // --- MAGIA DEL HISTORIAL ---
+    await db.query(
+      'INSERT INTO reportes (tipo_reporte, especialidad, descripcion) VALUES (?, ?, ?)',
+      ['Usuario', 'Nuevo', `Se creó el usuario/admin: ${email}`]
+    );
+    // ---------------------------
+
+    res.status(201).json({ mensaje: 'Usuario creado con éxito', id: result.insertId });
   } catch (error) {
-    console.error('Error al obtener el historial del usuario:', error);
-    res.status(500).json({ error: 'Error al consultar tu historial de compras.' });
+    res.status(500).json({ error: 'Error al guardar el usuario.' });
   }
 });
 
+app.delete('/api/usuarios/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM usuarios WHERE id = ?', [req.params.id]);
+
+    // --- MAGIA DEL HISTORIAL ---
+    await db.query(
+      'INSERT INTO reportes (tipo_reporte, especialidad, descripcion) VALUES (?, ?, ?)',
+      ['Usuario', 'Eliminar', `Se eliminó al usuario ID: ${req.params.id}`]
+    );
+    // ---------------------------
+
+    res.json({ mensaje: 'Usuario eliminado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar el usuario.' });
+  }
+});
+
+
 // =============================================================
-// 9. PANEL DE ADMINISTRACIÓN - CRUD DE PRODUCTOS E INVENTARIO
+// 9. PANEL DE ADMINISTRACIÓN - CRUD DE PRODUCTOS (Con historial automático)
 // =============================================================
 
 app.get('/api/admin/productos', async (req, res) => {
@@ -551,6 +631,7 @@ app.get('/api/admin/productos', async (req, res) => {
     const [results] = await db.query(query);
     res.json(results);
   } catch (error) {
+    console.error('Error GET productos admin:', error);
     res.status(500).json({ error: 'Error al consultar productos para admin.' });
   }
 });
@@ -559,10 +640,20 @@ app.post('/api/productos', async (req, res) => {
   const { codigo, nombre, id_categoria, precio, stock, descripcion, imagen } = req.body;
   const sql = 'INSERT INTO productos (codigo, nombre, id_categoria, precio, stock, descripcion, imagen) VALUES (?, ?, ?, ?, ?, ?, ?)';
   try {
-    const [result] = await db.query(sql, [codigo, nombre, id_categoria, precio, stock, descripcion, imagen || 'img/hamburguesa-index.webp']);
+    const imgFinal = imagen || 'img/hamburguesa-index.webp';
+    const [result] = await db.query(sql, [codigo, nombre, id_categoria, precio, stock, descripcion, imgFinal]);
+    
+    // --- MAGIA DEL HISTORIAL ---
+    await db.query(
+      'INSERT INTO reportes (tipo_reporte, especialidad, descripcion) VALUES (?, ?, ?)',
+      ['Producto', 'Nuevo', `Se creó el producto ${nombre} (${codigo})`]
+    );
+    // ---------------------------
+
     res.status(201).json({ mensaje: 'Producto creado con éxito', id: result.insertId });
   } catch (error) {
-    res.status(500).json({ error: 'Error al guardar el producto.' });
+    console.error('Error POST producto:', error); 
+    res.status(500).json({ error: 'Error al guardar el producto.', detalle: error.message });
   }
 });
 
@@ -571,23 +662,56 @@ app.put('/api/productos/:id', async (req, res) => {
   const { codigo, nombre, id_categoria, precio, stock, descripcion, imagen } = req.body;
   const sql = 'UPDATE productos SET codigo=?, nombre=?, id_categoria=?, precio=?, stock=?, descripcion=?, imagen=? WHERE id=?';
   try {
-    await db.query(sql, [codigo, nombre, id_categoria, precio, stock, descripcion, imagen, id]);
+    const imgFinal = imagen || '';
+    await db.query(sql, [codigo, nombre, id_categoria, precio, stock, descripcion, imgFinal, id]);
+    
+    // --- MAGIA DEL HISTORIAL ---
+    await db.query(
+      'INSERT INTO reportes (tipo_reporte, especialidad, descripcion) VALUES (?, ?, ?)',
+      ['Producto', 'Editar', `Se actualizó stock o info de ${nombre} (${codigo})`]
+    );
+    // ---------------------------
+
     res.json({ mensaje: 'Producto actualizado correctamente' });
   } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar el producto.' });
+    console.error('Error PUT producto:', error); 
+    res.status(500).json({ error: 'Error al actualizar el producto.', detalle: error.message });
   }
 });
 
 app.delete('/api/productos/:id', async (req, res) => {
   try {
     await db.query('DELETE FROM productos WHERE id = ?', [req.params.id]);
+
+    // --- MAGIA DEL HISTORIAL ---
+    await db.query(
+      'INSERT INTO reportes (tipo_reporte, especialidad, descripcion) VALUES (?, ?, ?)',
+      ['Producto', 'Eliminar', `Se eliminó el producto con ID: ${req.params.id} del catálogo`]
+    );
+    // ---------------------------
+
     res.json({ mensaje: 'Producto eliminado correctamente' });
   } catch (error) {
+    console.error('Error DELETE producto:', error);
     res.status(500).json({ error: 'Error al eliminar el producto.' });
   }
 });
 
-// Iniciar Servidor en Puerto 5000
+// (Tu ruta de app.get('/api/reportes', ...) sigue quedando igual abajo)
+// RUTA PARA OBTENER LOS REPORTES (VERSIÓN CON PROMESAS)
+app.get('/api/reportes', async (req, res) => {
+    try {
+        const sql = 'SELECT * FROM reportes ORDER BY fecha DESC';
+        // En promesas usamos await en lugar de (err, results) => {}
+        const [results] = await db.query(sql);
+        res.json(results);
+    } catch (err) {
+        console.error('Error al obtener reportes:', err);
+        res.status(500).json({ error: 'Error en el servidor' });
+    }
+});
+
+// Iniciar Servidor en Puerto 4000
 app.listen(5000, () => {
   console.log('🚀 Servidor Backend corriendo en http://localhost:5000');
 });

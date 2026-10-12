@@ -1,96 +1,80 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 
 export default function ReportesAdmin() {
-  const [ordenes, setOrdenes] = useState([]);
-  const [ingresosTotales, setIngresosTotales] = useState(0);
-  
-  // NUEVO: Estado de carga añadido
-  const [cargando, setCargando] = useState(true); 
-  
-  const location = useLocation();
+  const [historial, setHistorial] = useState([]);
+  const [filtroTipo, setFiltroTipo] = useState('Todos');
 
   useEffect(() => {
-    const cargarDatos = async () => {
-      setCargando(true); // Encendemos la rueda de carga
-      try {
-        const response = await fetch('http://localhost:5000/api/admin/ordenes', { cache: 'no-store' });
-        if (response.ok) {
-          const data = await response.json();
-          setOrdenes(data);
-          const total = data.reduce((acc, orden) => acc + Number(orden.total || 0), 0);
-          setIngresosTotales(total);
-        }
-      } catch (error) {
-        console.error("Error al cargar reportes:", error);
-      } finally {
-        setCargando(false); // Apagamos la rueda de carga
-      }
-    };
+    // Llamamos a tu backend real
+    // (Ajusta el http://localhost:3000 si tu backend usa otro puerto)
+    fetch('http://localhost:5000/api/reportes')
+      .then(respuesta => respuesta.json())
+      .then(datos => setHistorial(datos))
+      .catch(error => console.error("Error cargando la base de datos:", error));
+  }, []);
 
-    cargarDatos();
-  }, [location.key]);
+  const getColorEspecialidad = (especialidad) => {
+    switch (especialidad) {
+      case 'Nuevo': return 'success';
+      case 'Editar': return 'warning';
+      case 'Eliminar': return 'danger';
+      default: return 'secondary';
+    }
+  };
+
+  const reportesFiltrados = filtroTipo === 'Todos' 
+    ? historial 
+    : historial.filter(item => item.tipo_reporte === filtroTipo);
 
   return (
     <div className="container-fluid py-4">
-      <h2 className="mb-4 fw-bold">Informes Financieros</h2>
-      
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <div className="card text-white bg-success shadow-sm h-100">
-            <div className="card-body text-center d-flex flex-column justify-content-center">
-              <h5>Ingresos Totales (Histórico)</h5>
-              <h1 className="display-4 fw-bold">
-                {/* Renderizado condicional: Si está cargando muestra el spinner, si no, el dinero */}
-                {cargando ? <div className="spinner-border" role="status"></div> : `$${ingresosTotales.toLocaleString('es-CL')}`}
-              </h1>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="card text-white bg-info shadow-sm h-100">
-            <div className="card-body text-center d-flex flex-column justify-content-center">
-              <h5>Volumen de Ventas</h5>
-              <h1 className="display-4 fw-bold">
-                {/* Mismo spinner para la cantidad de órdenes */}
-                {cargando ? <div className="spinner-border" role="status"></div> : ordenes.length}
-              </h1>
-              <p className="mb-0">Órdenes procesadas</p>
-            </div>
-          </div>
-        </div>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="fw-bold m-0">Reporte General de Registros.</h2>
       </div>
 
       <div className="card shadow-sm">
-        <div className="card-header bg-dark text-white">
-          <h5 className="mb-0">Últimos movimientos registrados</h5>
+        <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+          <h5 className="mb-0">Historial de Cambios</h5>
+          
+          <div className="btn-group btn-group-sm" role="group">
+             <button type="button" className={`btn ${filtroTipo === 'Todos' ? 'btn-primary' : 'btn-outline-light'}`} onClick={() => setFiltroTipo('Todos')}>Todos</button>
+             <button type="button" className={`btn ${filtroTipo === 'Producto' ? 'btn-primary' : 'btn-outline-light'}`} onClick={() => setFiltroTipo('Producto')}>Productos</button>
+             <button type="button" className={`btn ${filtroTipo === 'Usuario' ? 'btn-primary' : 'btn-outline-light'}`} onClick={() => setFiltroTipo('Usuario')}>Usuarios</button>
+             <button type="button" className={`btn ${filtroTipo === 'Categoría' ? 'btn-primary' : 'btn-outline-light'}`} onClick={() => setFiltroTipo('Categoría')}>Categorías</button>
+          </div>
         </div>
-        <div className="card-body">
+        <div className="card-body p-0">
           <div className="table-responsive">
-            <table className="table table-sm table-hover align-middle">
+            <table className="table table-hover align-middle mb-0">
               <thead className="table-light">
                 <tr>
+                  <th>ID</th>
                   <th>Fecha</th>
-                  <th>N° Orden</th>
-                  <th>Cliente</th>
-                  <th>Monto</th>
+                  <th>Tipo de Reporte</th>
+                  <th>Especialidad</th>
+                  <th>Descripción</th>
                 </tr>
               </thead>
               <tbody>
-                {/* Spinner también en la tabla mientras carga */}
-                {cargando ? (
-                  <tr><td colSpan="4" className="text-center py-4"><div className="spinner-border text-primary" role="status"></div></td></tr>
-                ) : ordenes.length === 0 ? (
-                  <tr><td colSpan="4" className="text-center text-muted py-3">No hay órdenes registradas.</td></tr>
-                ) : (
-                  ordenes.slice(0, 10).map(orden => (
-                    <tr key={orden.id}>
-                      <td>{new Date(orden.fecha).toLocaleDateString('es-CL')}</td>
-                      <td>#{orden.id}</td>
-                      <td>{orden.nombre_cliente || 'Desconocido'}</td>
-                      <td className="fw-bold text-success">${Number(orden.total).toLocaleString('es-CL')}</td>
+                {reportesFiltrados.length > 0 ? (
+                  reportesFiltrados.map((item) => (
+                    <tr key={item.id}>
+                      <td><span className="badge bg-secondary">#{item.id}</span></td>
+                      {/* MySQL devuelve la fecha en formato ISO, la mostramos bonita */}
+                      <td className="text-muted small">{new Date(item.fecha).toLocaleString()}</td>
+                      <td className="fw-bold">{item.tipo_reporte}</td>
+                      <td>
+                        <span className={`badge bg-${getColorEspecialidad(item.especialidad)}`}>
+                          {item.especialidad}
+                        </span>
+                      </td>
+                      <td>{item.descripcion}</td>
                     </tr>
                   ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-4">No hay reportes en la base de datos.</td>
+                  </tr>
                 )}
               </tbody>
             </table>
