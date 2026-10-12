@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Form from 'react-bootstrap/Form';
 
 const estadoInicial = {
   nombre: '',
@@ -71,9 +73,17 @@ export default function Registro() {
     let errorText = '';
 
     switch (name) {
-      case 'nombre':
-        if (!value.trim()) errorText = 'El nombre completo es obligatorio.';
+      case 'nombre': {
+        const val = value.trim();
+        const regexNombre = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ]{3,}\s+[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,}$/;
+
+        if (!val) {
+          errorText = 'El nombre completo es obligatorio.';
+        } else if (!regexNombre.test(val)) {
+          errorText = 'Debe ingresar nombre y apellido con al menos 3 letras cada uno.';
+        }
         break;
+      }
 
       case 'email': {
         const emailVal = value.trim().toLowerCase();
@@ -163,8 +173,6 @@ export default function Registro() {
     if (Object.keys(nuevosErrores).length > 0) return;
 
     const emailLimpio = formData.email.trim().toLowerCase();
-    
-    // Asignar rol Administrador si el correo termina en @profesor.duoc.cl
     const esAdministradorRol = emailLimpio.endsWith('@profesor.duoc.cl') ? 1 : 0;
 
     const nuevoUsuario = {
@@ -234,16 +242,17 @@ export default function Registro() {
           <form onSubmit={handleSubmit} noValidate>
             
             {/* NOMBRE COMPLETO */}
-            <div className="form-group">
-              <label htmlFor="nombre">NOMBRE COMPLETO</label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                className={`form-input-dark ${errors.nombre ? 'input-error' : ''}`}
-                value={formData.nombre}
-                onChange={handleChange}
-              />
+            <div className="form-group mb-3">
+              <FloatingLabel controlId="nombre" label="NOMBRE COMPLETO">
+                <Form.Control
+                  type="text"
+                  name="nombre"
+                  placeholder="Juan Pérez"
+                  className={`form-input-dark ${errors.nombre ? 'input-error' : ''}`}
+                  value={formData.nombre}
+                  onChange={handleChange}
+                />
+              </FloatingLabel>
               {errors.nombre && (
                 <span className="error-message error-message-block">
                   {errors.nombre}
@@ -252,17 +261,18 @@ export default function Registro() {
             </div>
 
             {/* CORREO */}
-            <div className="form-group">
-              <label htmlFor="email">CORREO</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                maxLength={110}
-                className={`form-input-dark ${errors.email ? 'input-error' : ''}`}
-                value={formData.email}
-                onChange={handleChange}
-              />
+            <div className="form-group mb-3">
+              <FloatingLabel controlId="email" label="CORREO">
+                <Form.Control
+                  type="email"
+                  name="email"
+                  maxLength={110}
+                  placeholder="ejemplo@duoc.cl"
+                  className={`form-input-dark ${errors.email ? 'input-error' : ''}`}
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </FloatingLabel>
               {errors.email && (
                 <span className="error-message error-message-block">
                   {errors.email}
@@ -271,17 +281,18 @@ export default function Registro() {
             </div>
 
             {/* CONFIRMAR CORREO */}
-            <div className="form-group">
-              <label htmlFor="confirmarEmail">CORREO (Confirmación)</label>
-              <input
-                type="email"
-                id="confirmarEmail"
-                name="confirmarEmail"
-                maxLength={110}
-                className={`form-input-dark ${errors.confirmarEmail ? 'input-error' : ''}`}
-                value={formData.confirmarEmail}
-                onChange={handleChange}
-              />
+            <div className="form-group mb-3">
+              <FloatingLabel controlId="confirmarEmail" label="CORREO (Confirmación)">
+                <Form.Control
+                  type="email"
+                  name="confirmarEmail"
+                  maxLength={110}
+                  placeholder="ejemplo@duoc.cl"
+                  className={`form-input-dark ${errors.confirmarEmail ? 'input-error' : ''}`}
+                  value={formData.confirmarEmail}
+                  onChange={handleChange}
+                />
+              </FloatingLabel>
               {errors.confirmarEmail && (
                 <span className="error-message error-message-block">
                   {errors.confirmarEmail}
@@ -290,17 +301,18 @@ export default function Registro() {
             </div>
 
             {/* CONTRASEÑA */}
-            <div className="form-group">
-              <label htmlFor="password">CONTRASEÑA</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                maxLength={10}
-                className={`form-input-dark ${errors.password ? 'input-error' : ''}`}
-                value={formData.password}
-                onChange={handleChange}
-              />
+            <div className="form-group mb-3">
+              <FloatingLabel controlId="password" label="CONTRASEÑA">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  maxLength={10}
+                  placeholder="****"
+                  className={`form-input-dark ${errors.password ? 'input-error' : ''}`}
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </FloatingLabel>
               {errors.password && (
                 <span className="error-message error-message-block">
                   {errors.password}
@@ -309,17 +321,18 @@ export default function Registro() {
             </div>
 
             {/* CONFIRMAR CONTRASEÑA */}
-            <div className="form-group">
-              <label htmlFor="confirmarPassword">CONFIRMAR CONTRASEÑA</label>
-              <input
-                type="password"
-                id="confirmarPassword"
-                name="confirmarPassword"
-                maxLength={10}
-                className={`form-input-dark ${errors.confirmarPassword ? 'input-error' : ''}`}
-                value={formData.confirmarPassword}
-                onChange={handleChange}
-              />
+            <div className="form-group mb-3">
+              <FloatingLabel controlId="confirmarPassword" label="CONFIRMAR CONTRASEÑA">
+                <Form.Control
+                  type="password"
+                  name="confirmarPassword"
+                  maxLength={10}
+                  placeholder="****"
+                  className={`form-input-dark ${errors.confirmarPassword ? 'input-error' : ''}`}
+                  value={formData.confirmarPassword}
+                  onChange={handleChange}
+                />
+              </FloatingLabel>
               {errors.confirmarPassword && (
                 <span className="error-message error-message-block">
                   {errors.confirmarPassword}
@@ -328,42 +341,43 @@ export default function Registro() {
             </div>
 
             {/* TELÉFONO */}
-            <div className="form-group">
-              <label htmlFor="telefono">TELÉFONO (opcional)</label>
-              <input
-                type="tel"
-                id="telefono"
-                name="telefono"
-                className="form-input-dark"
-                value={formData.telefono}
-                onChange={handleChange}
-              />
+            <div className="form-group mb-3">
+              <FloatingLabel controlId="telefono" label="TELÉFONO (opcional)">
+                <Form.Control
+                  type="tel"
+                  name="telefono"
+                  placeholder="+56912345678"
+                  className="form-input-dark"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                />
+              </FloatingLabel>
             </div>
 
             {/* REGIÓN Y COMUNA DESDE MYSQL */}
-            <div className="form-row-flex">
+            <div className="form-row-flex mb-3">
               <div className="form-group form-group-flex">
-                <label htmlFor="region">Región</label>
-                <select
-                  id="region"
-                  name="region"
-                  className={`form-input-dark ${errors.region ? 'input-error' : ''}`}
-                  value={formData.region}
-                  onChange={handleChange}
-                  disabled={cargandoRegiones}
-                >
-                  <option value="" className="select-option-dark">
-                    {cargandoRegiones ? 'Cargando regiones...' : '-- Seleccione la región --'}
-                  </option>
-                  {listaRegiones.map((reg) => {
-                    const nombreReg = typeof reg === 'string' ? reg : reg.nombre_region || reg.nombre;
-                    return (
-                      <option key={reg.id_region || nombreReg} value={nombreReg} className="select-option-dark">
-                        {nombreReg}
-                      </option>
-                    );
-                  })}
-                </select>
+                <FloatingLabel controlId="region" label="Región">
+                  <Form.Select
+                    name="region"
+                    className={`form-input-dark ${errors.region ? 'input-error' : ''}`}
+                    value={formData.region}
+                    onChange={handleChange}
+                    disabled={cargandoRegiones}
+                  >
+                    <option value="" className="select-option-dark">
+                      {cargandoRegiones ? 'Cargando regiones...' : '-- Seleccione la región --'}
+                    </option>
+                    {listaRegiones.map((reg) => {
+                      const nombreReg = typeof reg === 'string' ? reg : reg.nombre_region || reg.nombre;
+                      return (
+                        <option key={reg.id_region || nombreReg} value={nombreReg} className="select-option-dark">
+                          {nombreReg}
+                        </option>
+                      );
+                    })}
+                  </Form.Select>
+                </FloatingLabel>
                 {errors.region && (
                   <span className="error-message error-message-block">
                     {errors.region}
@@ -372,25 +386,25 @@ export default function Registro() {
               </div>
 
               <div className="form-group form-group-flex">
-                <label htmlFor="comuna">Comuna</label>
-                <select
-                  id="comuna"
-                  name="comuna"
-                  className={`form-input-dark ${errors.comuna ? 'input-error' : ''}`}
-                  value={formData.comuna}
-                  onChange={handleChange}
-                  disabled={!formData.region || listaComunas.length === 0}
-                >
-                  <option value="" className="select-option-dark">-- Seleccione la comuna --</option>
-                  {listaComunas.map((com) => {
-                    const nombreCom = typeof com === 'string' ? com : com.nombre_comuna || com.nombre;
-                    return (
-                      <option key={com.id_comuna || nombreCom} value={nombreCom} className="select-option-dark">
-                        {nombreCom}
-                      </option>
-                    );
-                  })}
-                </select>
+                <FloatingLabel controlId="comuna" label="Comuna">
+                  <Form.Select
+                    name="comuna"
+                    className={`form-input-dark ${errors.comuna ? 'input-error' : ''}`}
+                    value={formData.comuna}
+                    onChange={handleChange}
+                    disabled={!formData.region || listaComunas.length === 0}
+                  >
+                    <option value="" className="select-option-dark">-- Seleccione la comuna --</option>
+                    {listaComunas.map((com) => {
+                      const nombreCom = typeof com === 'string' ? com : com.nombre_comuna || com.nombre;
+                      return (
+                        <option key={com.id_comuna || nombreCom} value={nombreCom} className="select-option-dark">
+                          {nombreCom}
+                        </option>
+                      );
+                    })}
+                  </Form.Select>
+                </FloatingLabel>
                 {errors.comuna && (
                   <span className="error-message error-message-block">
                     {errors.comuna}

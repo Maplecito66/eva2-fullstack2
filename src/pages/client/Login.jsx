@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Form from 'react-bootstrap/Form';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Login() {
@@ -75,28 +77,30 @@ export default function Login() {
           {error && <div className="alert-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Correo Electrónico</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ejemplo@correo.com"
-                required
-              />
+            {/* CORREO ELECTRÓNICO */}
+            <div className="form-group mb-3">
+              <FloatingLabel controlId="email" label="Correo Electrónico">
+                <Form.Control
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ejemplo@correo.com"
+                  required
+                />
+              </FloatingLabel>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
+            {/* CONTRASEÑA */}
+            <div className="form-group mb-3">
+              <FloatingLabel controlId="password" label="Contraseña">
+                <Form.Control
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </FloatingLabel>
             </div>
 
             <button type="submit" className="btn-primary form-btn" disabled={cargando}>
@@ -104,9 +108,9 @@ export default function Login() {
             </button>
           </form>
 
-            <p className="form-footer-text">
+          <p className="form-footer-text">
             ¿No tienes una cuenta? <Link to="/registro" className="link-bold-primary">Regístrate aquí</Link>
-            </p>
+          </p>
         </div>
       </div>
     </div>
