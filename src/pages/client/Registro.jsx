@@ -354,7 +354,6 @@ export default function Registro() {
               </FloatingLabel>
             </div>
 
-            {/* REGIÓN Y COMUNA DESDE MYSQL */}
             <div className="form-row-flex mb-3">
               <div className="form-group form-group-flex">
                 <FloatingLabel controlId="region" label="Región">

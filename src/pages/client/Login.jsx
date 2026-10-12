@@ -56,7 +56,6 @@ export default function Login() {
   return (
     <div className="login-wrapper">
       <div className="login-card-split">
-        {/* Columna Izquierda: Imagen Gastronómica Ancha */}
         <div className="login-image-side">
           <img 
             src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" 
@@ -68,7 +67,6 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Columna Derecha: Formulario de Login */}
         <div className="login-form-side">
           <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>
             Iniciar Sesión
@@ -77,7 +75,7 @@ export default function Login() {
           {error && <div className="alert-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-            {/* CORREO ELECTRÓNICO */}
+
             <div className="form-group mb-3">
               <FloatingLabel controlId="email" label="Correo Electrónico">
                 <Form.Control
