@@ -10,9 +10,9 @@ export default function Navbar() {
 
   const [categorias, setCategorias] = useState([]);
   const [dropdownAbierto, setDropdownAbierto] = useState(false);
+  const [menuMobileAbierto, setMenuMobileAbierto] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Consultar categorías a la base de datos
   const cargarCategorias = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/categorias');
@@ -31,7 +31,6 @@ export default function Navbar() {
     const manejarCambioCategorias = () => cargarCategorias();
     window.addEventListener('categoryChange', manejarCambioCategorias);
 
-    // Cierra el menú desplegable cuando se hace clic fuera del elemento
     const manejarClicFuera = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownAbierto(false);
@@ -48,10 +47,12 @@ export default function Navbar() {
   const handleLogout = () => {
     cerrarSesion();
     navigate('/');
+    setMenuMobileAbierto(false);
   };
 
   const handleSeleccionarCategoria = (nombreCat) => {
     setDropdownAbierto(false);
+    setMenuMobileAbierto(false);
     if (nombreCat) {
       navigate(`/categorias?cat=${encodeURIComponent(nombreCat)}`);
     } else {
@@ -65,32 +66,53 @@ export default function Navbar() {
     setDropdownAbierto((prev) => !prev);
   };
 
+  const toggleMenuMobile = () => {
+    setMenuMobileAbierto((prev) => !prev);
+  };
+
   return (
     <>
       <header className="main-header">
         <div className="logo">
-            <span className="logo-icon">🍔</span>
-            <h1>Sabor & Aroma</h1>
+          <span className="logo-icon">🍔</span>
+          <h1>Sabor & Aroma</h1>
         </div>
 
-        <nav className="navbar">
+        {/* Botón Hamburguesa para Mobile/Tablet */}
+        <button 
+          type="button"
+          className="btn-hamburger" 
+          onClick={toggleMenuMobile} 
+          aria-label="Toggle navigation"
+        >
+          {menuMobileAbierto ? '✕' : '☰'}
+        </button>
+
+        <nav className={`navbar ${menuMobileAbierto ? 'navbar-mobile-active' : ''}`}>
           <ul>
-            <li><Link to="/">Inicio</Link></li>
+            <li>
+              <Link to="/" onClick={() => setMenuMobileAbierto(false)}>Inicio</Link>
+            </li>
             <li className="separator">|</li>
 
-            {/* Menú Desplegable con Clic Fijo en la Flecha */}
             <li className="dropdown-categorias-container" ref={dropdownRef}>
-              <Link to="/categorias" className="nav-link-categorias">
-                Categorías
-              </Link>
-              <button 
-                type="button" 
-                className="btn-flecha-dropdown"
-                onClick={toggleDropdown}
-                title="Desplegar categorías"
-              >
-                ▼
-              </button>
+              <div className="dropdown-trigger-wrapper">
+                <Link 
+                  to="/categorias" 
+                  className="nav-link-categorias" 
+                  onClick={() => setMenuMobileAbierto(false)}
+                >
+                  Categorías
+                </Link>
+                <button 
+                  type="button" 
+                  className="btn-flecha-dropdown"
+                  onClick={toggleDropdown}
+                  title="Desplegar categorías"
+                >
+                  ▼
+                </button>
+              </div>
 
               {dropdownAbierto && (
                 <ul className="mini-menu-dropdown">
@@ -111,16 +133,16 @@ export default function Navbar() {
             </li>
 
             <li className="separator">|</li>
-            <li><Link to="/ofertas">Ofertas</Link></li>
+            <li><Link to="/ofertas" onClick={() => setMenuMobileAbierto(false)}>Ofertas</Link></li>
             <li className="separator">|</li>
-            <li><Link to="/nosotros">Nosotros</Link></li>
+            <li><Link to="/nosotros" onClick={() => setMenuMobileAbierto(false)}>Nosotros</Link></li>
             <li className="separator">|</li>
-            <li><Link to="/blog">Blog Culinario</Link></li>
+            <li><Link to="/blog" onClick={() => setMenuMobileAbierto(false)}>Blog Culinario</Link></li>
             <li className="separator">|</li>
-            <li><Link to="/contacto">Contacto</Link></li>
+            <li><Link to="/contacto" onClick={() => setMenuMobileAbierto(false)}>Contacto</Link></li>
 
-            <li>
-              <Link to="/carrito" className="cart-btn">
+            <li className="cart-item-nav">
+              <Link to="/carrito" className="cart-btn" onClick={() => setMenuMobileAbierto(false)}>
                 🛒 Mi Pedido ({obtenerTotalItems()})
               </Link>
             </li>
