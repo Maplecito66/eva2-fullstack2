@@ -8,16 +8,13 @@ export default function Comprar() {
   const { usuario } = useAuth();
   const navigate = useNavigate();
 
-  // Estado del flujo de pago: null = Formulario Principal | 1 = Pago Correcto | 2 = Pago Incorrecto
   const [estadoPago, setEstadoPago] = useState(null);
   const [procesando, setProcesando] = useState(false);
   const [numOrdenGenerada, setNumOrdenGenerada] = useState('');
   
-  // Resumen del pedido para conservar los datos visualmente tras limpiar el carrito
   const [resumenPedido, setResumenPedido] = useState([]);
   const [totalPedido, setTotalPedido] = useState(0);
 
-  // Formulario de datos del cliente y dirección
   const [formData, setFormData] = useState({
     nombre: usuario?.nombre?.split(' ')[0] || '',
     apellidos: usuario?.nombre?.split(' ').slice(1).join(' ') || '',
@@ -29,7 +26,6 @@ export default function Comprar() {
     indicaciones: ''
   });
 
-  // Regiones y comunas desde MySQL
   const [listaRegiones, setListaRegiones] = useState([]);
   const [listaComunas, setListaComunas] = useState([]);
 
@@ -86,7 +82,6 @@ export default function Comprar() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Botón Verde -> Pago Exitoso (Servidor BD + Limpia Carrito + Estado 1)
   const handlePagoExitoso = async () => {
     const idUsuario = usuario?.id || usuario?.id_usuario || usuario?.usuario_id;
     if (!idUsuario) {
@@ -131,13 +126,12 @@ export default function Comprar() {
     }
   };
 
-  // Botón Rojo -> Pago Fallido (Simulación estado 2 sin vaciar carrito)
   const handlePagoFallido = () => {
     setNumOrdenGenerada(Math.floor(10000000 + Math.random() * 90000000));
     setEstadoPago(2);
   };
 
-  // VISTA 1: PAGO CORRECTO (IMAGEN 2)
+  // VISTA 1: PAGO CORRECTO
   if (estadoPago === 1) {
     return (
       <div className="checkout-container">
@@ -149,7 +143,7 @@ export default function Comprar() {
           <p className="checkout-subtitle">Completa la siguiente información</p>
 
           <div className="checkout-section">
-            <div className="form-row-3">
+            <div className="form-row-responsive form-row-3">
               <div className="form-group">
                 <label>Nombre*</label>
                 <input type="text" value={formData.nombre} readOnly className="input-readonly" />
@@ -167,7 +161,7 @@ export default function Comprar() {
 
           <div className="checkout-section">
             <h3>Dirección de entrega de los productos</h3>
-            <div className="form-row-2">
+            <div className="form-row-responsive form-row-2">
               <div className="form-group">
                 <label>Calle*</label>
                 <input type="text" value={formData.calle || 'Dirección registrada'} readOnly className="input-readonly" />
@@ -178,7 +172,7 @@ export default function Comprar() {
               </div>
             </div>
 
-            <div className="form-row-2">
+            <div className="form-row-responsive form-row-2">
               <div className="form-group">
                 <label>Región*</label>
                 <input type="text" value={formData.region} readOnly className="input-readonly" />
@@ -197,7 +191,6 @@ export default function Comprar() {
             )}
           </div>
 
-          {/* Tabla de Resumen */}
           <div className="checkout-table-wrapper">
             <table className="checkout-table">
               <thead>
@@ -242,7 +235,7 @@ export default function Comprar() {
     );
   }
 
-  // VISTA 2: PAGO INCORRECTO (IMAGEN 3)
+  // VISTA 2: PAGO INCORRECTO
   if (estadoPago === 2) {
     return (
       <div className="checkout-container">
@@ -259,7 +252,7 @@ export default function Comprar() {
           </div>
 
           <div className="checkout-section">
-            <div className="form-row-3">
+            <div className="form-row-responsive form-row-3">
               <div className="form-group">
                 <label>Nombre*</label>
                 <input type="text" value={formData.nombre} readOnly className="input-readonly" />
@@ -277,7 +270,7 @@ export default function Comprar() {
 
           <div className="checkout-section">
             <h3>Dirección de entrega de los productos</h3>
-            <div className="form-row-2">
+            <div className="form-row-responsive form-row-2">
               <div className="form-group">
                 <label>Calle*</label>
                 <input type="text" value={formData.calle || 'Dirección no completada'} readOnly className="input-readonly" />
@@ -288,7 +281,7 @@ export default function Comprar() {
               </div>
             </div>
 
-            <div className="form-row-2">
+            <div className="form-row-responsive form-row-2">
               <div className="form-group">
                 <label>Región*</label>
                 <input type="text" value={formData.region} readOnly className="input-readonly" />
@@ -300,7 +293,6 @@ export default function Comprar() {
             </div>
           </div>
 
-          {/* Tabla de Productos */}
           <div className="checkout-table-wrapper">
             <table className="checkout-table">
               <thead>
@@ -336,7 +328,7 @@ export default function Comprar() {
     );
   }
 
-  // VISTA FORMULARIO PRINCIPAL (estadoPago === null - IMAGEN 1)
+  // VISTA FORMULARIO PRINCIPAL
   return (
     <div className="checkout-container">
       <div className="checkout-card">
@@ -350,7 +342,6 @@ export default function Comprar() {
           </div>
         </div>
 
-        {/* Tabla de Productos */}
         <div className="checkout-table-wrapper">
           <table className="checkout-table">
             <thead>
@@ -386,12 +377,11 @@ export default function Comprar() {
           </table>
         </div>
 
-        {/* Información del Cliente */}
         <div className="checkout-section">
           <h3>Información del cliente</h3>
           <p className="checkout-subtitle">Completa la siguiente información</p>
 
-          <div className="form-row-2">
+          <div className="form-row-responsive form-row-2">
             <div className="form-group">
               <label htmlFor="nombre">Nombre*</label>
               <input
@@ -432,12 +422,11 @@ export default function Comprar() {
           </div>
         </div>
 
-        {/* Dirección de Entrega */}
         <div className="checkout-section">
           <h3>Dirección de entrega de los productos</h3>
           <p className="checkout-subtitle">Ingrese direccion de forma detallada</p>
 
-          <div className="form-row-2">
+          <div className="form-row-responsive form-row-2">
             <div className="form-group">
               <label htmlFor="calle">Calle*</label>
               <input
@@ -465,7 +454,7 @@ export default function Comprar() {
             </div>
           </div>
 
-          <div className="form-row-2">
+          <div className="form-row-responsive form-row-2">
             <div className="form-group">
               <label htmlFor="region">Región*</label>
               <select
@@ -516,7 +505,6 @@ export default function Comprar() {
           </div>
         </div>
 
-        {/* Sección con los 2 botones de prueba de pago */}
         <div className="payment-test-actions">
           <div className="payment-btn-box">
             <span className="payment-label-success">Pago correcto</span>
