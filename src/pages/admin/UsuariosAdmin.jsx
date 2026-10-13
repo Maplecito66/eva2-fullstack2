@@ -67,7 +67,7 @@ export default function UsuariosAdmin() {
     try {
       const url = editandoId 
         ? `http://localhost:5000/api/usuarios/${editandoId}` 
-        : 'http://localhost:5000/api/usuarios/registro'; 
+        : 'http://localhost:5000/api/usuarios'; 
       
       const method = editandoId ? 'PUT' : 'POST';
 
@@ -166,7 +166,9 @@ export default function UsuariosAdmin() {
                   <input type="email" className="form-control" name="email" value={formData.email} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Contraseña {editandoId && '(Opcional)'}</label>
+                  <label className="form-label">
+                    Contraseña {editandoId ? <span>(Opcional)</span> : null}
+                  </label>
                   <input type="password" className="form-control" name="password" value={formData.password} onChange={handleChange} required={!editandoId} placeholder="******" />
                 </div>
                 
@@ -235,7 +237,6 @@ export default function UsuariosAdmin() {
                           <td>{usuario.email}</td>
                           <td>{usuario.comuna || 'N/A'}</td>
                           <td>
-                            {/* Insignia dinámica según el rol de administración */}
                             <span className={`badge ${usuario.esadmin ? 'bg-primary' : 'bg-info text-dark'}`}>
                               {usuario.esadmin ? 'Administración' : 'Cliente'}
                             </span>
