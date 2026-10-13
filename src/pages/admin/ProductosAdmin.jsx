@@ -1,28 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function ProductosAdmin() {
+  // Estado para la lista de productos y categorías desde la BD
   const [productos, setProductos] = useState([]);
   const [categoriasLista, setCategoriasLista] = useState([]);
+  
+  // Estado para controlar los campos del formulario de creación/edición
   const [formData, setFormData] = useState({
     codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: '', imagen: ''
   });
-  const [editandoId, setEditandoId] = useState(null);
-  const [filtroActivo, setFiltroActivo] = useState('todos');
+  
+  const [editandoId, setEditandoId] = useState(null); // Almacena el ID si se está editando
+  const [filtroActivo, setFiltroActivo] = useState('todos'); // Controla el filtro de stock en la tabla
 
-  // Referencia para controlar y limpiar el input de archivo
+  // Referencia para limpiar visualmente el input de archivos
   const fileInputRef = useRef(null);
 
-  // Estado para el Toast de notificaciones
+  // Estados para notificaciones Toast y confirmación de borrado (Modal)
   const [toast, setToast] = useState({ mostrar: false, mensaje: '', tipo: 'success' });
-  
-  // Estado para controlar el Modal de confirmación de eliminación
   const [productoAEliminar, setProductoAEliminar] = useState(null);
 
+  // Función para mostrar mensajes flotantes temporales
   const mostrarMensaje = (mensaje, tipo = 'success') => {
     setToast({ mostrar: true, mensaje, tipo });
     setTimeout(() => setToast({ mostrar: false, mensaje: '', tipo: 'success' }), 3000);
   };
 
+  // Función GET: Carga productos y categorías del backend
   const obtenerDatos = async () => {
     try {
       const resProd = await fetch('http://localhost:5000/api/admin/productos', { cache: 'no-store' });
@@ -35,14 +39,17 @@ export default function ProductosAdmin() {
     }
   };
 
+  // Hook que ejecuta obtenerDatos al cargar la página
   useEffect(() => {
     obtenerDatos();
   }, []);
 
+  // Actualiza el formData dinámicamente al escribir en los inputs
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Función POST / PUT: Envía el formulario para crear o actualizar un producto
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -61,7 +68,7 @@ export default function ProductosAdmin() {
         obtenerDatos();
         setFormData({ codigo: '', nombre: '', id_categoria: '', precio: '', stock: '', descripcion: '', imagen: '' }); 
         setEditandoId(null);
-        if (fileInputRef.current) fileInputRef.current.value = ""; // Limpia el input de archivo visualmente
+        if (fileInputRef.current) fileInputRef.current.value = "";
         mostrarMensaje(`✅ ¡"${formData.nombre}" guardado con éxito!`);
       } else {
         const data = await response.json();
@@ -72,6 +79,7 @@ export default function ProductosAdmin() {
     }
   };
 
+  // Carga los datos del producto seleccionado en el formulario para editarlos
   const handleEdit = (producto) => {
     setFormData({
       codigo: producto.codigo,
@@ -80,12 +88,13 @@ export default function ProductosAdmin() {
       precio: producto.precio,
       stock: producto.stock,
       descripcion: producto.descripcion,
-      imagen: producto.imagen || '' // Carga la imagen actual
+      imagen: producto.imagen || '' 
     });
     setEditandoId(producto.id);
-    if (fileInputRef.current) fileInputRef.current.value = ""; // Limpia cualquier archivo anterior seleccionado
+    if (fileInputRef.current) fileInputRef.current.value = ""; 
   };
 
+  // Función DELETE: Envía la petición para eliminar el producto confirmado
   const confirmarEliminacion = async () => {
     if (!productoAEliminar) return;
     
@@ -106,6 +115,7 @@ export default function ProductosAdmin() {
     setProductoAEliminar(null);
   };
 
+  // Filtra los productos según el botón seleccionado (todos o stock crítico <= 10)
   const productosFiltrados = filtroActivo === 'criticos' 
     ? productos.filter(producto => producto.stock <= 10)
     : productos;
@@ -113,14 +123,14 @@ export default function ProductosAdmin() {
   return (
     <div className="container-fluid py-4 position-relative">
       
-      {/* Sistema de Notificaciones Toast */}
+      {/* Toast de notificaciones visuales */}
       {toast.mostrar && (
         <div className={`alert alert-${toast.tipo} position-fixed top-0 end-0 m-3 shadow-lg z-3`} style={{ zIndex: 1050 }}>
           {toast.mensaje}
         </div>
       )}
 
-      {/* Modal de Confirmación de Eliminación */}
+      {/* Modal de confirmación para eliminar */}
       {productoAEliminar && (
         <>
           <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
@@ -148,6 +158,7 @@ export default function ProductosAdmin() {
       <h2 className="mb-4">Gestión de Productos e Inventario</h2>
 
       <div className="row">
+        {/* Columna del Formulario */}
         <div className="col-md-4 mb-4">
           <div className="card shadow-sm">
             <div className="card-header bg-dark text-white">
@@ -189,7 +200,7 @@ export default function ProductosAdmin() {
                   <textarea className="form-control" name="descripcion" value={formData.descripcion} onChange={handleChange} rows="2"></textarea>
                 </div>
                 
-                {/* ZONA DE IMAGEN ACTUALIZADA */}
+                {/* Selector de archivo para la imagen */}
                 <div className="mb-3">
                   <label className="form-label">Imagen del Producto</label>
                   
@@ -240,6 +251,7 @@ export default function ProductosAdmin() {
           </div>
         </div>
 
+        {/* Columna de la Tabla de Inventario */}
         <div className="col-md-8">
           <div className="card shadow-sm">
             <div className="card-header bg-white d-flex justify-content-between align-items-center">

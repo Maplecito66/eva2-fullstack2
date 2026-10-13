@@ -2,35 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Dashboard() {
+  // Estados para guardar las cantidades totales y controlar el spinner de carga
   const [metricas, setMetricas] = useState({ compras: 0, productos: 0, usuarios: 0 });
-  const [cargando, setCargando] = useState(true); // NUEVO: Estado de carga
+  const [cargando, setCargando] = useState(true); 
   
   const location = useLocation();
 
+  // Función que trae los datos del backend para los contadores
   useEffect(() => {
     const cargarMetricas = async () => {
-      setCargando(true); // Iniciamos el spinner
+      setCargando(true); // Enciende el spinner
       try {
-        // Agregamos { cache: 'no-store' } para obligar al navegador a ir a MySQL siempre
+        // Promise.all ejecuta las 3 peticiones al mismo tiempo para que cargue más rápido
         const [resOrdenes, resProd, resUsu] = await Promise.all([
           fetch('http://localhost:5000/api/admin/ordenes', { cache: 'no-store' }),
           fetch('http://localhost:5000/api/admin/productos', { cache: 'no-store' }),
           fetch('http://localhost:5000/api/usuarios', { cache: 'no-store' })
         ]);
         
+        // Si la respuesta es OK, la convierte a JSON. Si falla, devuelve un array vacío [].
         const ordenes = resOrdenes.ok ? await resOrdenes.json() : [];
         const productos = resProd.ok ? await resProd.json() : [];
         const usuarios = resUsu.ok ? await resUsu.json() : [];
 
+        // Guarda en el estado la cantidad total (length) de cada tabla
         setMetricas({ compras: ordenes.length, productos: productos.length, usuarios: usuarios.length });
       } catch (error) {
         console.error("Error cargando métricas:", error);
       } finally {
-        setCargando(false); // Apagamos el spinner
+        setCargando(false); // Apaga el spinner sin importar si hubo error o éxito
       }
     };
     
-    cargarMetricas();
+    cargarMetricas(); // Ejecuta la función al entrar a la pantalla
   }, [location.key]);
 
   return (
@@ -40,12 +44,15 @@ export default function Dashboard() {
         <p className="text-muted">Resumen de las actividades diarias</p>
       </div>
 
+      {/* --- ZONA DE TARJETAS DE MÉTRICAS --- */}
       <div className="row mb-4">
+        
         {/* Tarjeta Compras */}
         <div className="col-md-4 mb-3">
           <div className="card text-white bg-primary shadow-sm h-100">
             <div className="card-body d-flex flex-column justify-content-center align-items-center text-center">
               <h1 className="display-5 fw-bold mb-0">
+                {/* Operador ternario: si 'cargando' es true dibuja el spinner, si es false dibuja el número */}
                 {cargando ? <div className="spinner-border spinner-border-sm" role="status"></div> : `🛒 ${metricas.compras}`}
               </h1>
               <h5 className="card-title mt-2">Compras Totales</h5>
@@ -81,6 +88,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* --- ZONA DE BOTONES DE NAVEGACIÓN --- */}
       <div className="row g-4">
         <TarjetaNavegacion titulo="Dashboard" icono="📊" desc="Visión general de todas las métricas." ruta="/admin" />
         <TarjetaNavegacion titulo="Órdenes" icono="🛒" desc="Seguimiento de compras." ruta="/admin/ordenes" />
@@ -95,6 +103,7 @@ export default function Dashboard() {
   );
 }
 
+// Subcomponente reutilizable: Dibuja las tarjetas pequeñas de navegación de abajo
 function TarjetaNavegacion({ titulo, icono, desc, ruta }) {
   return (
     <div className="col-md-3">

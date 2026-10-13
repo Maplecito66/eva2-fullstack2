@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// Diccionario estático para los selects sin necesidad de tablas extra en BD
+// Diccionario estático para los selects de región y comuna
 const datosUbicacion = {
   "Región Metropolitana": ["Santiago", "Providencia", "San Joaquín", "Maipú", "Puente Alto", "La Florida", "El Bosque"],
   "Valparaíso": ["Valparaíso", "Viña del Mar", "Quilpué"],
@@ -9,24 +9,25 @@ const datosUbicacion = {
 };
 
 export default function UsuariosAdmin() {
+  // Estados para la lista de usuarios, datos del formulario y selectores
   const [usuarios, setUsuarios] = useState([]);
-  
-  // Adaptado a las columnas exactas de tu tabla 'usuarios'
   const [formData, setFormData] = useState({ 
     nombre: '', email: '', password: '', region: '', comuna: '', esadmin: '0' 
   });
   
   const [comunasDisponibles, setComunasDisponibles] = useState([]);
-  const [editandoId, setEditandoId] = useState(null);
-  const [toast, setToast] = useState({ mostrar: false, mensaje: '', tipo: 'success' });
+  const [editandoId, setEditandoId] = useState(null); // Almacena el ID si se está editando
+  const [toast, setToast] = useState({ mostrar: false, mensaje: '', tipo: 'success' }); // Control de alertas
   
   const location = useLocation();
 
+  // Función para mostrar mensajes flotantes temporales
   const mostrarMensaje = (mensaje, tipo = 'success') => {
     setToast({ mostrar: true, mensaje, tipo });
     setTimeout(() => setToast({ mostrar: false, mensaje: '', tipo: 'success' }), 3000);
   };
 
+  // Función GET: Obtiene la lista de usuarios desde el backend
   const obtenerUsuarios = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/usuarios', { cache: 'no-store' });
@@ -38,14 +39,15 @@ export default function UsuariosAdmin() {
     }
   };
 
+  // Hook que ejecuta obtenerUsuarios al cargar o cambiar de ruta
   useEffect(() => {
     obtenerUsuarios();
   }, [location.key]);
 
-  // Maneja el cambio de región y actualiza las comunas disponibles
+  // Actualiza las comunas disponibles de forma dinámica al cambiar la región seleccionada
   const handleRegionChange = (e) => {
     const regionSeleccionada = e.target.value;
-    setFormData({ ...formData, region: regionSeleccionada, comuna: '' }); // Limpia la comuna
+    setFormData({ ...formData, region: regionSeleccionada, comuna: '' }); 
     
     if (regionSeleccionada && datosUbicacion[regionSeleccionada]) {
       setComunasDisponibles(datosUbicacion[regionSeleccionada]);
@@ -54,16 +56,18 @@ export default function UsuariosAdmin() {
     }
   };
 
+  // Actualiza el formData dinámicamente al escribir en los inputs
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Función POST / PUT: Envía el formulario para crear o actualizar un usuario
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const url = editandoId 
         ? `http://localhost:5000/api/usuarios/${editandoId}` 
-        : 'http://localhost:5000/api/usuarios/registro'; // Asegúrate de que tu backend use esta ruta
+        : 'http://localhost:5000/api/usuarios/registro'; 
       
       const method = editandoId ? 'PUT' : 'POST';
 
@@ -88,17 +92,17 @@ export default function UsuariosAdmin() {
     }
   };
 
+  // Carga los datos del usuario seleccionado en el formulario para editarlos
   const handleEdit = (usuario) => {
     setFormData({
       nombre: usuario.nombre,
       email: usuario.email,
-      password: '', // Se deja en blanco por seguridad
+      password: '', 
       region: usuario.region || '',
       comuna: usuario.comuna || '',
-      esadmin: usuario.esadmin ? '1' : '0' // Transforma el tinyint de MySQL a string para el select
+      esadmin: usuario.esadmin ? '1' : '0' 
     });
     
-    // Carga las comunas correspondientes a la región del usuario
     if (usuario.region && datosUbicacion[usuario.region]) {
       setComunasDisponibles(datosUbicacion[usuario.region]);
     } else {
@@ -108,6 +112,7 @@ export default function UsuariosAdmin() {
     setEditandoId(usuario.id);
   };
 
+  // Función DELETE: Pide confirmación y elimina un usuario del sistema
   const handleDelete = async (id, nombre) => {
     if (window.confirm(`¿Seguro que deseas eliminar al usuario "${nombre}"?`)) {
       try {
@@ -127,6 +132,7 @@ export default function UsuariosAdmin() {
   return (
     <div className="container-fluid py-4 position-relative">
       
+      {/* Toast de notificaciones visuales */}
       {toast.mostrar && (
         <div className={`alert alert-${toast.tipo} position-fixed top-0 end-0 m-3 shadow-lg z-3`} style={{ zIndex: 1050 }}>
           {toast.mensaje}
@@ -143,7 +149,7 @@ export default function UsuariosAdmin() {
       </div>
 
       <div className="row">
-        {/* FORMULARIO */}
+        {/* Columna del Formulario */}
         <div className="col-md-4 mb-4">
           <div className="card shadow-sm">
             <div className="card-header bg-dark text-white">
@@ -202,7 +208,7 @@ export default function UsuariosAdmin() {
           </div>
         </div>
 
-        {/* TABLA */}
+        {/* Columna de la Tabla de Usuarios */}
         <div className="col-md-8">
           <div className="card shadow-sm">
             <div className="card-body p-0 p-md-3">
@@ -229,6 +235,7 @@ export default function UsuariosAdmin() {
                           <td>{usuario.email}</td>
                           <td>{usuario.comuna || 'N/A'}</td>
                           <td>
+                            {/* Insignia dinámica según el rol de administración */}
                             <span className={`badge ${usuario.esadmin ? 'bg-primary' : 'bg-info text-dark'}`}>
                               {usuario.esadmin ? 'Administración' : 'Cliente'}
                             </span>

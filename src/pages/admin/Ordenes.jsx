@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export default function Ordenes() {
-  const [ordenes, setOrdenes] = useState([]);
-  const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
-  const [detalles, setDetalles] = useState([]);
-  const [cargandoDetalles, setCargandoDetalles] = useState(false);
-  const [toast, setToast] = useState({ mostrar: false, mensaje: '', tipo: 'success' });
+  // Estados para manejar los datos y la interfaz
+  const [ordenes, setOrdenes] = useState([]); // Guarda la lista de todas las órdenes
+  const [ordenSeleccionada, setOrdenSeleccionada] = useState(null); // Guarda la orden a la que le hicimos click para ver detalles
+  const [detalles, setDetalles] = useState([]); // Guarda los productos comprados en esa orden
+  const [cargandoDetalles, setCargandoDetalles] = useState(false); // Controla el spinner mientras carga el modal
+  const [toast, setToast] = useState({ mostrar: false, mensaje: '', tipo: 'success' }); // Controla las notificaciones flotantes
   
   const location = useLocation();
 
+  // Función para mostrar una alerta temporal (toast) y apagarla a los 3 seg
   const mostrarMensaje = (mensaje, tipo = 'success') => {
     setToast({ mostrar: true, mensaje, tipo });
     setTimeout(() => setToast({ mostrar: false, mensaje: '', tipo: 'success' }), 3000);
   };
 
-  // 1. Cargar todas las órdenes
+  // Trae la lista maestra de órdenes desde el backend
   const obtenerOrdenes = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/admin/ordenes', { cache: 'no-store' });
@@ -28,30 +30,31 @@ export default function Ordenes() {
     }
   };
 
+  // Se ejecuta automáticamente al cargar la página para rellenar la tabla
   useEffect(() => {
     obtenerOrdenes();
   }, [location.key]);
 
-  // 2. Cargar los detalles de una orden específica al hacer clic
+  // Al hacer clic en "Ver detalles", abre el modal y pide al backend los productos de esa orden específica
   const verDetalles = async (orden) => {
-    setOrdenSeleccionada(orden);
-    setCargandoDetalles(true);
+    setOrdenSeleccionada(orden); // Abre el modal
+    setCargandoDetalles(true); // Prende el spinner
     try {
       const response = await fetch(`http://localhost:5000/api/ordenes/${orden.id}/detalle`);
       if (response.ok) {
         const data = await response.json();
-        setDetalles(data);
+        setDetalles(data); // Guarda los productos comprados
       } else {
         setDetalles([]);
       }
     } catch (error) {
       mostrarMensaje('Error al cargar los detalles de la orden.', 'danger');
     } finally {
-      setCargandoDetalles(false);
+      setCargandoDetalles(false); // Apaga el spinner
     }
   };
 
-  // 3. (Opcional pero recomendado) Cambiar el estado de la orden
+  // Cambia el estado del envío (Pendiente, En camino, Entregado) enviando un PUT al servidor
   const cambiarEstado = async (id, nuevoEstado) => {
     try {
       const response = await fetch(`http://localhost:5000/api/admin/ordenes/${id}/estado`, {
@@ -60,7 +63,7 @@ export default function Ordenes() {
         body: JSON.stringify({ estado: nuevoEstado })
       });
       if (response.ok) {
-        obtenerOrdenes(); // Recarga la tabla
+        obtenerOrdenes(); // Recarga la tabla completa para actualizar colores
         mostrarMensaje(`Estado actualizado a "${nuevoEstado}"`);
       }
     } catch (error) {
@@ -68,10 +71,12 @@ export default function Ordenes() {
     }
   };
 
+  // Formatea la fecha de MySQL (ISO) a formato chileno (DD/MM/YYYY)
   const formatearFecha = (fechaISO) => {
     return new Date(fechaISO).toLocaleDateString('es-CL');
   };
 
+  // Asigna un color al selector (select) de estado dependiendo de su valor
   const badgeColor = (estado) => {
     switch (estado) {
       case 'Pendiente': return 'bg-warning text-dark';
@@ -85,14 +90,14 @@ export default function Ordenes() {
   return (
     <div className="container-fluid py-4 position-relative">
       
-      {/* Toast de Notificaciones */}
+      {/* Zona de Notificación (Toast) */}
       {toast.mostrar && (
         <div className={`alert alert-${toast.tipo} position-fixed top-0 end-0 m-3 shadow-lg z-3`} style={{ zIndex: 1050 }}>
           {toast.mensaje}
         </div>
       )}
 
-      {/* Modal de Detalles de la Orden */}
+      {/* Zona del Modal: Solo se renderiza si hay una ordenSeleccionada */}
       {ordenSeleccionada && (
         <>
           <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
@@ -103,6 +108,8 @@ export default function Ordenes() {
                   <h5 className="modal-title">Detalles de la Orden #{ordenSeleccionada.id}</h5>
                   <button type="button" className="btn-close btn-close-white" onClick={() => setOrdenSeleccionada(null)}></button>
                 </div>
+                
+                {/* Cuerpo del Modal: Muestra datos del cliente y la tabla de sus productos */}
                 <div className="modal-body">
                   <div className="row mb-3">
                     <div className="col-sm-6">
@@ -116,6 +123,8 @@ export default function Ordenes() {
                   </div>
                   
                   <h6 className="fw-bold border-bottom pb-2">Productos comprados</h6>
+                  
+                  {/* Si está cargando detalles muestra spinner, si no, dibuja la tabla */}
                   {cargandoDetalles ? (
                     <div className="text-center py-4"><div className="spinner-border text-primary" role="status"></div></div>
                   ) : detalles.length === 0 ? (
@@ -145,6 +154,7 @@ export default function Ordenes() {
                     </div>
                   )}
                 </div>
+                
                 <div className="modal-footer">
                   <button type="button" className="btn btn-secondary" onClick={() => setOrdenSeleccionada(null)}>Cerrar</button>
                 </div>
@@ -156,7 +166,7 @@ export default function Ordenes() {
 
       <h2 className="mb-4 fw-bold">Gestión de Órdenes</h2>
 
-      {/* Contenedor Responsivo de la Tabla */}
+      {/* Tabla Principal: Lista de todas las órdenes en sistema */}
       <div className="card shadow-sm">
         <div className="card-header bg-white">
           <h5 className="mb-0">Historial de Compras</h5>
@@ -185,7 +195,7 @@ export default function Ordenes() {
                       <td>{formatearFecha(orden.fecha)}</td>
                       <td className="fw-bold">${Number(orden.total).toLocaleString('es-CL')}</td>
                       <td>
-                        {/* Dropdown integrado para cambiar el estado rápido */}
+                        {/* Dropdown integrado para cambiar el estado. Llama a 'cambiarEstado' en tiempo real */}
                         <select 
                           className={`form-select form-select-sm fw-bold ${badgeColor(orden.estado)}`} 
                           value={orden.estado} 
