@@ -40,17 +40,19 @@ describe('Vista de Comprar (Checkout)', () => {
     });
   });
 
-  // TEST 1: Formulario principal de datos
-  it('Debe renderizar la información del cliente y los campos de dirección de entrega', () => {
+  // TEST 1: Formulario principal de datos (Asíncrono con waitFor para limpiar el aviso de act)
+  it('Debe renderizar la información del cliente y los campos de dirección de entrega', async () => {
     render(
       <MemoryRouter>
         <Comprar />
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('heading', { name: /carrito de compra/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/calle\*/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/departamento \(opcional\)/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /carrito de compra/i })).toBeInTheDocument();
+      expect(screen.getByLabelText(/calle\*/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/departamento \(opcional\)/i)).toBeInTheDocument();
+    });
   });
 
   // TEST 2: Flujo de Pago Correcto
@@ -63,11 +65,9 @@ describe('Vista de Comprar (Checkout)', () => {
       </MemoryRouter>
     );
 
-    // Seleccionar el primer botón (Verde: Pago correcto)
     const botonesPago = screen.getAllByRole('button', { name: /pagar ahora/i });
     await user.click(botonesPago[0]);
 
-    // Verificar que aparezca el mensaje de éxito con número de orden
     await waitFor(() => {
       expect(screen.getByText(/se ha realizado la compra/i)).toBeInTheDocument();
     });
@@ -83,11 +83,9 @@ describe('Vista de Comprar (Checkout)', () => {
       </MemoryRouter>
     );
 
-    // Seleccionar el segundo botón (Rojo: Pago incorrecto)
     const botonesPago = screen.getAllByRole('button', { name: /pagar ahora/i });
     await user.click(botonesPago[1]);
 
-    // Verificar que aparezca el mensaje de error de pago
     await waitFor(() => {
       expect(screen.getByText(/no se pudo realizar el pago/i)).toBeInTheDocument();
     });
